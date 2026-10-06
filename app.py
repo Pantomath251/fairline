@@ -22,7 +22,9 @@ from pydantic import BaseModel, Field
 from fairline import cards, config, marketgen, matcher, odds
 from fairline.fixtures import FixtureBook
 from fairline.panta import PantaClient, PantaError, price as panta_price
-from fairline.tape import Tape
+from fairline.tape import Tape, _redact as redact
+
+import base58
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
 logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -51,8 +53,9 @@ async def lifespan(_app: FastAPI):
 app = FastAPI(title="Fairline", version="1.0.0", lifespan=lifespan,
               description="Fair odds, market creation and trading for Panta prediction markets on Solana. "
                           "Powered by Panta.")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"],
-                   expose_headers=["PAYMENT-REQUIRED", "PAYMENT-RESPONSE", "X-PAYMENT-RESPONSE"])
+# CORS: the agent API is public (any origin, so x402 clients and directories can read 402s). Everything under /api/
+# is same-origin only, so other websites open in the user's browser cannot drive a local Fairline instance.
+PUBLIC_PREFIXES = ("/agent", "/.well-known/")
 
 
 @app.exception_handler(PantaError)
@@ -104,8 +107,8 @@ async def fixture(fixture_id: int):
     fx = book.by_id.get(fixture_id)
     if not fx:
         raise HTTPException(404, "fixture not found or already started")
-    props = [{"kind": k, "question": marketgen.TEMPLATES[k].format(home=fx["home"], away=fx["away"]),
-              "fairYes": round(marketgen.fair_yes(fx, k) or 0, 4)} for k in marketgen.kinds_for(fx)]
+    props = [{"kind": k, "question": marketgen.question(fx, k), "fairYes": round(marketgen.fair_yes(fx, k) or 0, 4)}
+             for k in marketgen.kinds_for(fx)]
     return {"fixture": fx, "propositions": props}
 
 
@@ -124,7 +127,9 @@ async def price_question(question: str, start: int = 0):
 # ------------------------------------------------------------------------------------------------------------------
 async def _enrich_market(m: dict, fixtures_list: list[dict], detail: bool) -> dict:
     out = dict(m)
-    if detail:
+    # Detail rows cost one read each (Panta allows ~120/min): fetch them for markets that can still trade, and for
+    # rows whose catalog entry lacks a title.
+    if detail and (m.get("phase") in ("primary", "secondary") or not m.get("title")):
         # list rows can lag (empty titles, stale phase); the detail row is authoritative and carries spot prices
         try:
             d = await panta.market(m["marketId"])
@@ -191,8 +196,10 @@ async def positions(wallet: str):
         m = prices.get(r["marketId"]) or {}
         r["title"] = m.get("title")
         shares = float(r.get("shares") or 0)
-        if r.get("outcome"):
-            value = shares if r["outcome"] == r["side"] else 0.0
+        if r.get("claimed"):
+            value = 0.0  # already paid out
+        elif r.get("outcome"):
+            value = shares if str(r["outcome"]).lower() == str(r["side"]).lower() else 0.0
         else:
             value = shares * (panta_price(m, r["side"]) or 0.0)
         r["estValueUsdc"] = round(value, 4)
@@ -300,8 +307,9 @@ async def _fixture_or_404(fid: int) -> dict:
 @app.get("/api/cards/{fixture_id}/{kind}.png")
 async def card(fixture_id: int, kind: str):
     fx = await _fixture_or_404(fixture_id)
-    q = marketgen.TEMPLATES[kind].format(home=fx["home"], away=fx["away"])
-    png = await asyncio.to_thread(cards.render, fx, q, marketgen.fair_yes(fx, kind))
+    if kind not in marketgen.kinds_for(fx):
+        raise HTTPException(404, "unknown proposition")
+    png = await asyncio.to_thread(cards.render, fx, marketgen.question(fx, kind), marketgen.fair_yes(fx, kind))
     return Response(png, media_type="image/png", headers={"Cache-Control": "public, max-age=300"})
 
 
@@ -315,12 +323,17 @@ async def create_preview(fixtureId: int, kind: str):
             "fixture": fx, "warning": warning}
 
 
+def _form_value(v) -> str:
+    # Cloudinary verifies the signature over the exact strings Panta signed: JSON booleans must stay lower-case.
+    return "true" if v is True else "false" if v is False else str(v)
+
+
 async def _upload_card(fx: dict, kind: str) -> str:
     sig = await panta.image_upload_signature()
-    q = marketgen.TEMPLATES[kind].format(home=fx["home"], away=fx["away"])
-    png = await asyncio.to_thread(cards.render, fx, q, marketgen.fair_yes(fx, kind))
+    png = await asyncio.to_thread(cards.render, fx, marketgen.question(fx, kind), marketgen.fair_yes(fx, kind))
     async with httpx.AsyncClient(timeout=60) as h:
-        r = await h.post(sig["uploadUrl"], data={k: str(v) for k, v in (sig.get("fields") or {}).items()},
+        r = await h.post(sig["uploadUrl"],
+                         data={k: _form_value(v) for k, v in (sig.get("fields") or {}).items() if v is not None},
                          files={"file": (f"fairline-{fx['id']}-{kind}.png", png, "image/png")})
     if r.status_code >= 400:
         raise PantaError(502, "IMAGE_UPLOAD_FAILED", r.text[:200])
@@ -330,6 +343,7 @@ async def _upload_card(fx: dict, kind: str) -> str:
 @app.post("/api/create/quote")
 async def create_quote(b: CreateReq):
     fx = await _fixture_or_404(b.fixtureId)
+    marketgen.build(fx, b.kind, "https://placeholder.invalid/x.png")  # validate before using the upload quota
     image_url = await _upload_card(fx, b.kind)
     payload = marketgen.build(fx, b.kind, image_url)
     payload["wallet"] = b.wallet
@@ -360,18 +374,25 @@ class SigReq(BaseModel):
 
 @app.post("/api/rpc/send")
 async def rpc_send(b: SendReq):
-    base64.b64decode(b.transaction, validate=True)
+    raw = base64.b64decode(b.transaction, validate=True)
+    # Only relay Panta transactions through the operator's RPC key (account keys are stored raw in the message).
+    if not any(base58.b58decode(pid) in raw for pid in tape.program_ids):
+        raise HTTPException(400, "only Panta transactions are relayed")
     try:
         sig = await tape.rpc("sendTransaction", [b.transaction, {"encoding": "base64", "skipPreflight": False,
                                                                  "preflightCommitment": "confirmed", "maxRetries": 5}])
-    except RuntimeError as e:
-        raise HTTPException(400, str(e)[:500])
+    except (RuntimeError, httpx.HTTPError) as e:
+        raise HTTPException(400, redact(str(e))[:500])
     return {"signature": sig, "provider": tape.status["provider"]}
 
 
 @app.post("/api/rpc/status")
 async def rpc_status(b: SigReq):
-    res = await tape.rpc("getSignatureStatuses", [[b.signature], {"searchTransactionHistory": True}])
+    # A transient RPC error must not abort the client flow after broadcast: report "unknown" and let it poll again.
+    try:
+        res = await tape.rpc("getSignatureStatuses", [[b.signature], {"searchTransactionHistory": True}], retries=2)
+    except (RuntimeError, httpx.HTTPError) as e:
+        return {"status": None, "error": redact(str(e))[:200]}
     return {"status": (res or {}).get("value", [None])[0]}
 
 
@@ -410,6 +431,25 @@ async def tape_stream(request: Request):
 from fairline import agent, setup  # noqa: E402  (needs `book`, `panta` and `tape` defined above)
 
 agent.mount(app, book, lambda **kw: markets(**kw))
-setup.mount(app, panta, tape)
+if config.env("ENABLE_SETUP", "1") != "0":  # local first-run setup; the Docker image turns it off
+    setup.mount(app, panta, tape)
 
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
+
+
+class PublicCORS:
+    """Wildcard CORS for the public agent API only; /api/* stays same-origin. Added last so it wraps the x402
+    middleware and 402 responses carry CORS headers too."""
+
+    def __init__(self, inner):
+        self.inner = inner
+        self.cors = CORSMiddleware(inner, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"],
+                                   expose_headers=["PAYMENT-REQUIRED", "PAYMENT-RESPONSE", "X-PAYMENT-RESPONSE"])
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http" and scope["path"].startswith(PUBLIC_PREFIXES):
+            return await self.cors(scope, receive, send)
+        return await self.inner(scope, receive, send)
+
+
+app.add_middleware(PublicCORS)
