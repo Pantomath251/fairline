@@ -52,7 +52,15 @@ def fair_from_fixture(fx: dict) -> dict | None:
     h, d, a = fx.get("oddsHome"), fx.get("oddsDraw"), fx.get("oddsAway")
     if d:
         p = devig_power([h, d, a])
-        return {"home": p[0], "draw": p[1], "away": p[2], "overround": overround([h, d, a])} if p else None
+        if not p:
+            return None
+        if fx.get("sport") not in (None, "football"):
+            # 3-way regulation odds (e.g. hockey from the fallback source): markets settle including OT/shootout,
+            # so split the regulation draw between the sides in proportion to their win chances.
+            share = p[0] / (p[0] + p[2])
+            return {"home": p[0] + p[1] * share, "draw": None, "away": p[2] + p[1] * (1 - share),
+                    "overround": overround([h, d, a])}
+        return {"home": p[0], "draw": p[1], "away": p[2], "overround": overround([h, d, a])}
     p = devig_power([h, a])
     return {"home": p[0], "draw": None, "away": p[1], "overround": overround([h, a])} if p else None
 

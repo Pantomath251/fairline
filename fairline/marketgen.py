@@ -5,25 +5,42 @@ import time
 from datetime import datetime, timezone
 
 MIN_START_DELAY = 3600  # Panta's on-chain minimumStartDelay (seconds)
+SESSION_SLACK = 600     # create sessions live ~5 min; leave room for a slow wallet approval
+MAX_QUESTION = 280      # on-chain QuestionTooLong limit
 
+# The date makes each question unique (Panta derives the market address from creator + question) and never looks
+# like a scoreline to the matcher ("on 10 Oct", not "10-10").
 TEMPLATES = {
-    "home_win": "Will {home} beat {away}?",
-    "away_win": "Will {away} beat {home}?",
-    "draw": "Will {home} vs {away} end in a draw?",
-    "over25": "Will {home} vs {away} have over 2.5 goals?",
-    "btts": "Will both {home} and {away} score?",
+    "home_win": "Will {home} beat {away} on {day}?",
+    "away_win": "Will {away} beat {home} on {day}?",
+    "draw": "Will {home} vs {away} on {day} end in a draw?",
+    "over25": "Will {home} vs {away} on {day} have over 2.5 goals?",
+    "btts": "Will both {home} and {away} score on {day}?",
 }
 
-REGULATION = {
-    "football": "after regular time (90 minutes plus stoppage time; extra time and penalty shoot-outs do not count)",
-    "ice-hockey": "including overtime and shoot-out",
-    "basketball": "including overtime",
-    "tennis": "(a retirement or walkover counts as a win for the player who advances)",
+
+def question(fx: dict, kind: str) -> str:
+    d = datetime.fromtimestamp(int(fx["startTimestamp"]), timezone.utc)
+    q = TEMPLATES[kind].format(home=fx["home"], away=fx["away"], day=f"{d.day} {d:%b}")
+    if len(q) > MAX_QUESTION:
+        raise ValueError(f"question exceeds Panta's {MAX_QUESTION}-character on-chain limit")
+    return q
+
+REGULATION_SHORT = {
+    "football": "in regular time (90'+stoppage; no ET/penalties)",
+    "ice-hockey": "incl. OT and shootout",
+    "basketball": "incl. OT",
+    "american-football": "incl. OT",
+    "baseball": "incl. extra innings",
+    "tennis": "the match (retirement/walkover: the player who advances)",
 }
+# Bytes of question + rule + sources that fit one create transaction: a measured build with 330 text bytes came to
+# 1035 of Solana's 1232 bytes, leaving ~200; keep ~45 bytes of margin.
+ONCHAIN_TEXT_BUDGET = 480
 
 
 def _when(ts: int) -> str:
-    return datetime.fromtimestamp(ts, timezone.utc).strftime("%d %b %Y %H:%M UTC")
+    return datetime.fromtimestamp(ts, timezone.utc).strftime("%d %b %Y %H:%M UTC").lstrip("0")
 
 
 def kinds_for(fx: dict) -> list[str]:
@@ -39,7 +56,7 @@ def fair_yes(fx: dict, kind: str) -> float | None:
 
 
 def too_soon(fx: dict) -> bool:
-    return int(fx["startTimestamp"]) - time.time() < MIN_START_DELAY + 120
+    return int(fx["startTimestamp"]) - time.time() < MIN_START_DELAY + SESSION_SLACK
 
 
 def build(fx: dict, kind: str, image_url: str = "", strict: bool = True) -> dict:
@@ -50,32 +67,34 @@ def build(fx: dict, kind: str, image_url: str = "", strict: bool = True) -> dict
     ko = int(fx["startTimestamp"])
     if strict and too_soon(fx):
         raise ValueError("Kick-off is less than an hour away; Panta requires startTime at least 3600s ahead")
-    question = TEMPLATES[kind].format(home=home, away=away)
+    q = question(fx, kind)
     comp = fx.get("tournament") or "the competition"
-    reg = REGULATION.get(sport, "")
-    base = f"The {comp} match {home} vs {away} scheduled for {_when(ko)}"
+    reg = REGULATION_SHORT.get(sport, "")
     rules = {
-        "home_win": f"Resolves YES if {home} win the match {reg}. Resolves NO if the match ends in a draw or {away} win.",
-        "away_win": f"Resolves YES if {away} win the match {reg}. Resolves NO if the match ends in a draw or {home} win.",
-        "draw": f"Resolves YES if the match is level at the end of regular time (90 minutes plus stoppage time). "
-                f"Resolves NO otherwise.",
-        "over25": "Resolves YES if 3 or more goals are scored in regular time (90 minutes plus stoppage time), "
-                  "own goals included. Resolves NO if 2 or fewer goals are scored.",
-        "btts": f"Resolves YES if both {home} and {away} score at least one goal in regular time "
-                f"(90 minutes plus stoppage time), own goals credited to the benefiting team. Resolves NO otherwise.",
+        "home_win": f"YES if {home} win {reg}; NO on a draw or {away} win.",
+        "away_win": f"YES if {away} win {reg}; NO on a draw or {home} win.",
+        "draw": "YES if level after regular time (90'+stoppage); NO otherwise.",
+        "over25": "YES if 3+ goals in regular time (90'+stoppage), own goals count; NO otherwise.",
+        "btts": f"YES if both {home} and {away} score in regular time (90'+stoppage); NO otherwise.",
     }
-    rule = (f"{base}. {rules[kind]} If the match is abandoned, or postponed and not completed within 48 hours of the "
-            f"scheduled start, the market resolves NO. Official result as published by the organiser and on "
-            f"SofaScore.")
+    sources = ["https://www.sofascore.com", "https://www.espn.com"]
+    # Question, rule and sources are written on-chain by create_event and must fit one Solana transaction
+    # (1232 bytes including accounts and signatures). Shorten the header, never the resolution terms.
+    rule = None
+    for head in (f"{home} v {away}, {comp}, {_when(ko)}.", f"{home} v {away}, {_when(ko)}.", f"Kickoff {_when(ko)}."):
+        cand = f"{head} {rules[kind]} Abandoned or not played within 48h of kickoff: NO. Official result."
+        if len(q.encode()) + len(cand.encode()) + sum(len(s) for s in sources) <= ONCHAIN_TEXT_BUDGET:
+            rule = cand
+            break
+    if rule is None:
+        raise ValueError("Team names are too long to fit an on-chain Panta market")
     end = ko + int(fx.get("durationMin", 150)) * 60
-    sources = [s for s in (fx.get("url"), "https://www.sofascore.com", "https://www.espn.com/soccer/scoreboard"
-                           if sport == "football" else "https://www.espn.com") if s]
     payload = {
-        "question": question[:512],
-        "title": question[:200],
-        "description": f"{comp} · {_when(ko)}. Fair probability from bookmaker consensus (de-vigged): "
+        "question": q,
+        "title": q[:200],
+        "description": f"{comp} · {_when(ko)}. Fair probability from de-vigged Pinnacle odds: "
                        f"{round((fair_yes(fx, kind) or 0) * 100, 1)}%. Created with Fairline.",
-        "resolutionRule": rule[:2048],
+        "resolutionRule": rule,
         "sourcesOfTruth": sources[:20],
         "category": "sports",
         "startTime": ko,

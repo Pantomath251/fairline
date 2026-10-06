@@ -58,6 +58,8 @@ class Tape:
         self._http = httpx.AsyncClient(timeout=30)
         self._sem = asyncio.Semaphore(4)
         self._newest: dict[str, str] = {}
+        self._ws = None
+        self._resubscribe = False
 
     # ---- RPC ---------------------------------------------------------------------------------------------------
     async def rpc(self, method: str, params: list, retries: int = 4):
@@ -74,6 +76,8 @@ class Tape:
                 continue
             if err:
                 raise RuntimeError(f"{method}: {err}")
+            if r.status_code >= 400 or "result" not in d:
+                raise RuntimeError(f"{method}: HTTP {r.status_code} {r.text[:120]}")
             return d.get("result")
 
     async def get_tx(self, sig: str) -> dict | None:
@@ -188,6 +192,23 @@ class Tape:
         self.seen.add(sig)
         return True
 
+    async def _new_signatures(self, pid: str, until: str | None, page: int = 25, max_pages: int = 8) -> list[dict]:
+        """All signatures newer than `until`, newest first, paging backwards so bursts between polls are kept."""
+        out: list[dict] = []
+        before = None
+        for _ in range(max_pages if until else 1):
+            params = {"limit": page, "commitment": "confirmed"}
+            if until:
+                params["until"] = until
+            if before:
+                params["before"] = before
+            batch = await self.rpc("getSignaturesForAddress", [pid, params], retries=2) or []
+            out += batch
+            if len(batch) < page:
+                break
+            before = batch[-1]["signature"]
+        return out
+
     async def poll_forever(self, interval: float = 2.0) -> None:
         """Near-real-time fallback when the RPC plan has no WebSocket access: poll getSignaturesForAddress with
         `until` = newest signature already seen, then decode each new transaction."""
@@ -195,11 +216,9 @@ class Tape:
         newest: dict[str, str | None] = {pid: self._newest.get(pid) for pid in self.program_ids}
         while True:
             for pid in list(self.program_ids):
-                params = {"limit": 25, "commitment": "confirmed"}
-                if newest.get(pid):
-                    params["until"] = newest[pid]
+                newest.setdefault(pid, self._newest.get(pid))
                 try:
-                    sigs = await self.rpc("getSignaturesForAddress", [pid, params], retries=2) or []
+                    sigs = await self._new_signatures(pid, newest.get(pid))
                     self.status["error"] = None
                 except Exception as e:  # noqa: BLE001
                     self.status["error"] = _redact(f"{type(e).__name__}: {e}")[:160]
@@ -237,6 +256,10 @@ class Tape:
                     delay = 2
                     async for raw in ws:
                         msg = json.loads(raw)
+                        if "error" in msg and msg.get("id"):
+                            # subscription rejected (plan limits etc.): poll the same RPC instead
+                            self.status.update(error=str(msg["error"])[:160], mode="RPC polling")
+                            break
                         if msg.get("method") != "logsNotification":
                             continue
                         self.status["messages"] += 1
@@ -248,6 +271,13 @@ class Tape:
                             continue
                         item = self.decode(sig, val.get("logs") or [], val.get("err"), slot, None)
                         asyncio.create_task(self._enrich_and_publish(item))
+                # socket closed: back off unless reconfigure()/add_program() asked for an immediate resubscribe
+                self._ws = None
+                self.status["connected"] = False
+                if not self._resubscribe:
+                    await asyncio.sleep(delay)
+                    delay = min(delay * 2, 60)
+                self._resubscribe = False
             except websockets.InvalidStatus as e:
                 code = getattr(getattr(e, "response", None), "status_code", 0)
                 if code in (400, 401, 403, 405):
@@ -307,10 +337,17 @@ class Tape:
         """Switch RPC/WebSocket endpoints (e.g. after a Solami key is added) and force a reconnect."""
         self.rpc_url, self.ws_url = rpc_url, ws_url
         self.status["provider"] = provider
-        ws = getattr(self, "_ws", None)
-        if ws is not None:
-            asyncio.create_task(ws.close())
+        self._force_resubscribe()
 
     def add_program(self, pid: str) -> None:
+        """Watch another program id (e.g. learned from a Panta build response). Polling picks it up on the next
+        round; an open WebSocket is closed so the loop resubscribes with the full list."""
         if pid not in self.program_ids:
             self.program_ids.append(pid)
+            self._force_resubscribe()
+
+    def _force_resubscribe(self) -> None:
+        ws = self._ws
+        if ws is not None:
+            self._resubscribe = True
+            asyncio.create_task(ws.close())

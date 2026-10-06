@@ -32,7 +32,11 @@ def set_env(key: str, value: str) -> None:
 
 
 def _mask(s: str) -> str:
-    return s[:10] + "…" + s[-4:] if s and len(s) > 16 else "set" if s else ""
+    """Key type only (e.g. 'pk_live_') plus the last 4 characters: never any of the secret's leading characters."""
+    if not s:
+        return ""
+    prefix = "_".join(s.split("_")[:2]) + "_" if s.count("_") >= 2 else s.split("_")[0] + "_" if "_" in s else ""
+    return f"{prefix}…{s[-4:]}" if len(s) > 12 else "set"
 
 
 class PantaSignup(BaseModel):
@@ -47,8 +51,15 @@ class KeyIn(BaseModel):
 
 def mount(app: FastAPI, panta, tape) -> None:
     def local_only(req: Request) -> None:
+        # Behind a proxy the client address comes from X-Forwarded-For, which a caller controls: refuse any
+        # forwarded request, and refuse cross-site requests from other pages open in the same browser.
+        if req.headers.get("x-forwarded-for") or req.headers.get("forwarded"):
+            raise HTTPException(403, "setup is only available from this computer")
         if (req.client.host if req.client else "") not in LOCAL:
             raise HTTPException(403, "setup is only available from this computer")
+        origin = req.headers.get("origin")
+        if origin and origin.split("://", 1)[-1] != req.headers.get("host", ""):
+            raise HTTPException(403, "cross-site setup requests are not allowed")
 
     @app.get("/api/setup")
     async def setup_status(request: Request):

@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 
 from fastapi import FastAPI, Query
+from fastapi.responses import JSONResponse
 
 from . import config, matcher
 
@@ -45,14 +46,13 @@ CATALOG = [
 
 
 def mount(app: FastAPI, book, markets_fn) -> None:
-    routes = {key: _paid(price, desc, ex_in, schema, ex_out) for key, price, desc, ex_in, schema, ex_out in CATALOG} \
-        if config.PAY_TO else {}
-    if config.PUBLIC_URL:
-        for key, cfg in routes.items():
-            cfg["resource"] = config.PUBLIC_URL + key.split()[1]
-
-    if routes:
+    routes = {}
+    if config.PAY_TO:
         try:
+            routes = {key: _paid(price, desc, ex_in, schema, ex_out) for key, price, desc, ex_in, schema, ex_out in CATALOG}
+            if config.PUBLIC_URL:
+                for key, cfg in routes.items():
+                    cfg["resource"] = config.PUBLIC_URL + key.split()[1]
             from x402 import x402ResourceServer
             from x402.http import FacilitatorConfig, HTTPFacilitatorClient
             from x402.http.middleware.fastapi import payment_middleware
@@ -67,11 +67,17 @@ def mount(app: FastAPI, book, markets_fn) -> None:
 
             @app.middleware("http")
             async def x402_mw(request, call_next):
-                if request.url.path.startswith("/agent/v1/"):
+                if not request.url.path.startswith("/agent/v1/"):
+                    return await call_next(request)
+                try:
                     return await mw(request, call_next)
-                return await call_next(request)
+                except Exception as e:  # noqa: BLE001 - a facilitator outage must not become a generic 500
+                    log.warning("x402 middleware failed: %s", e)
+                    return JSONResponse({"error": "payments temporarily unavailable"}, status_code=503)
             log.info("x402 payments enabled on %s -> %s", config.X402_NETWORK, config.PAY_TO)
-        except Exception as e:  # noqa: BLE001 - payments are optional; never take the app down
+        except BaseException as e:  # noqa: BLE001 - payments are optional; never take the app down (incl. SystemExit)
+            if isinstance(e, KeyboardInterrupt):
+                raise
             log.warning("x402 disabled: %s", e)
             routes = {}
 

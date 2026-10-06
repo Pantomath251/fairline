@@ -182,8 +182,10 @@ _SYSTEM_PROGRAMS = {
 
 
 def price(m: dict, side: str = "yes") -> float | None:
-    """Best available spot price for a side (0..1). Secondary (CLOB) price wins once a market has graduated."""
-    keys = (f"{side}Price", f"secondary{side.title()}Price", f"primary{side.title()}Price")
+    """Best available spot price for a side (0..1). Secondary (CLOB) price wins once a market has graduated; a
+    secondary side that has never traded reports 0 and falls through to the spot/primary price."""
+    sec, spot, prim = f"secondary{side.title()}Price", f"{side}Price", f"primary{side.title()}Price"
+    keys = (sec, spot, prim) if m.get("phase") == "secondary" else (spot, prim, sec)
     for k in keys:
         v = m.get(k)
         try:
@@ -192,6 +194,6 @@ def price(m: dict, side: str = "yes") -> float | None:
             continue
         if f > 1:  # secondary prices are reported on the program's 1e9 fixed-point scale
             f /= 1e9
-        if 0 < f < 1:
-            return f
+        if 0 < f <= 1:
+            return min(f, 0.999999)
     return None

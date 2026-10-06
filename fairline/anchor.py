@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import base64
 import json
+import re
 import struct
 from pathlib import Path
 
@@ -29,6 +30,10 @@ class Reader:
     def s(self, n: int) -> int:
         return int.from_bytes(self.take(n), "little", signed=True)
 
+
+# Runtime frame lines only (program-emitted "Program log: ..." lines must never move the invoke stack).
+_INVOKE = re.compile(r"^Program ([1-9A-HJ-NP-Za-km-z]{32,44}) invoke \[\d+\]$")
+_END = re.compile(r"^Program [1-9A-HJ-NP-Za-km-z]{32,44} (?:success|failed\b)")
 
 _INTS = {"u8": (1, False), "u16": (2, False), "u32": (4, False), "u64": (8, False), "u128": (16, False),
          "i8": (1, True), "i16": (2, True), "i32": (4, True), "i64": (8, True), "i128": (16, True)}
@@ -108,18 +113,20 @@ class Idl:
         by other programs is ignored)."""
         out, stack = [], []
         for line in logs or []:
-            if line.startswith("Program ") and " invoke [" in line:
-                stack.append(line.split()[1])
-            elif line.startswith("Program ") and (line.endswith(" success") or " failed" in line):
-                if stack:
-                    stack.pop()
-            elif line.startswith("Program data: ") and (not stack or stack[-1] == self.address):
-                try:
-                    ev = self.decode_event(base64.b64decode(line[len("Program data: "):]))
-                except (ValueError, base64.binascii.Error):
-                    ev = None
-                if ev:
-                    out.append(ev)
+            if line.startswith(("Program log: ", "Program data: ", "Program return: ", "Program consumed")):
+                if line.startswith("Program data: ") and (not stack or stack[-1] == self.address):
+                    try:
+                        ev = self.decode_event(base64.b64decode(line[len("Program data: "):]))
+                    except (ValueError, base64.binascii.Error):
+                        ev = None
+                    if ev:
+                        out.append(ev)
+                continue
+            m = _INVOKE.match(line)
+            if m:
+                stack.append(m.group(1))
+            elif _END.match(line) and stack:
+                stack.pop()
         return out
 
     def instruction_names(self, logs: list[str]) -> list[str]:
