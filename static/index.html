@@ -67,7 +67,7 @@
   <section id="tab-markets" class="tab active">
     <div class="intro">
       <h1>Is this market priced right?</h1>
-      <p>Every Panta sports market is read, matched to the real fixture and priced against de-vigged bookmaker consensus.
+      <p>Every Panta sports market is read, matched to the real fixture and priced against de-vigged Pinnacle odds, the sharpest line in sports betting.
         Green means the market is cheaper than the fair probability.</p>
     </div>
     <div class="toolbar">
@@ -110,7 +110,7 @@
   <section id="tab-tape" class="tab">
     <div class="intro">
       <h1>Panta, live from Solana</h1>
-      <p>Program logs streamed in real time over Solami WebSocket RPC, Anchor events decoded in-house, USDC flows read from each transaction.</p>
+      <p>Panta program activity read live from Solana through Solami (WebSocket logsSubscribe, or 2-second RPC polling on plans without WebSockets), Anchor events decoded in-house, USDC flows read from each transaction.</p>
     </div>
     <div id="tape-status" class="muted"></div>
     <div id="tape" class="tape"></div>
@@ -135,7 +135,7 @@
 
 <footer>
   <a href="https://panta.market" target="_blank" rel="noopener" class="powered">Powered by Panta</a>
-  <span class="muted">· fair odds from public bookmaker consensus (SofaScore) · on-chain stream by Solami · not financial advice</span>
+  <span class="muted">· fair odds from Pinnacle (SofaScore fallback) · on-chain data by Solami · not financial advice</span>
 </footer>
 <script src="/static/app.js"></script>
 </body>

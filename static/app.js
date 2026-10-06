@@ -74,6 +74,9 @@ async function connect() {
 }
 $("#connect").onclick = () => connect().catch((e) => toast(e.message));
 provider()?.connect?.({ onlyIfTrusted: true }).then((r) => { state.wallet = r.publicKey.toString(); $("#connect").textContent = short(state.wallet); }).catch(() => {});
+// Watch-only mode (?wallet=<address>): quote and build with a public address, stop before signing.
+const watchOnly = new URLSearchParams(location.search).get("wallet");
+if (watchOnly && !provider()) { state.wallet = watchOnly; state.watchOnly = true; $("#connect").textContent = "👁 " + short(watchOnly); }
 
 function b64ToBytes(b64) { const s = atob(b64); const u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; }
 function bytesToB64(u) { let s = ""; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); }
@@ -91,18 +94,36 @@ function txFromInstructions(build) {
 
 /** Wallet signs; Fairline relays through Solami RPC and waits for confirmation. */
 async function signAndSend(tx) {
+  if (!provider()) throw new Error("Unsigned transaction ready: open Fairline in a browser with Phantom to sign it");
   const signed = await provider().signTransaction(tx);
   const { signature } = await api("/api/rpc/send", { method: "POST", body: { transaction: bytesToB64(signed.serialize()) } });
   for (let i = 0; i < 40; i++) {
-    const { status } = await api("/api/rpc/status", { method: "POST", body: { signature } });
+    let status = null;
+    try { ({ status } = await api("/api/rpc/status", { method: "POST", body: { signature } })); } catch (_) { /* transient: keep polling */ }
     if (status?.err) throw new Error("Transaction failed on-chain: " + JSON.stringify(status.err));
     if (status && ["confirmed", "finalized"].includes(status.confirmationStatus)) return signature;
-    await new Promise((r) => setTimeout(r, 1500));
+    await sleep(1500);
   }
-  return signature;
+  throw new Error(`Not confirmed after 60s (signature ${signature}); check Solscan before retrying`);
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/** Retry a Panta call while the chain catches up (Panta verifies at its own commitment level). */
+async function retryWhile(fn, pattern, tries = 10, wait = 3000) {
+  for (let i = 0; ; i++) {
+    try { return await fn(); } catch (e) { if (!pattern.test(e.message) || i >= tries - 1) throw e; await sleep(wait); }
+  }
 }
 
 function steps(list) { return `<div class="steps">${list.map((s, i) => `<div class="step" id="st-${i}">○ ${esc(s)}</div>`).join("")}</div>`; }
+/** Mark the first unfinished step as failed — or as paused when a watch-only session stops before signing. */
+function failStep(out, e) {
+  const cur = $$(".step", out).find((s) => !s.classList.contains("done"));
+  if (!cur) return toast(e.message);
+  const paused = /^Unsigned transaction ready/.test(e.message);
+  cur.className = "step" + (paused ? "" : " err");
+  cur.textContent = (paused ? "⏸ " : "✗ ") + e.message;
+}
 function stepState(i, cls, text) { const el = $("#st-" + i); if (!el) return; el.className = "step " + cls; el.textContent = (cls === "done" ? "✓ " : cls === "err" ? "✗ " : "… ") + text; }
 
 /* ---------- status pills ---------- */
@@ -184,14 +205,17 @@ async function buyFlow(m, side) {
       stepState(1, "done", `Order ${b.orderId} · expected ${b.expectedShares} shares`);
       stepState(2, "", "Waiting for Phantom…");
       const sig = await signAndSend(txFromInstructions(b));
-      stepState(2, "done", "Signed"); stepState(3, "done", `Landed: ${short(sig)}`);
-      stepState(4, "", "Submitting…");
-      await api("/api/buy/submit", { method: "POST", body: { orderId: b.orderId, signature: sig, wallet: state.wallet } });
-      const v = await api("/api/buy/verify", { method: "POST", body: { orderId: b.orderId, signature: sig, wallet: state.wallet } });
-      api("/api/trades/report", { method: "POST", body: { signature: sig, wallet: state.wallet, marketId: m.marketId, quoteId: q.quoteId, orderId: b.orderId } }).catch(() => {});
-      stepState(4, "done", `Panta status: ${v.status}`);
+      stepState(2, "done", "Signed"); stepState(3, "done", `Confirmed: ${short(sig)}`);
       out.insertAdjacentHTML("beforeend", `<p><a target="_blank" href="https://solscan.io/tx/${sig}">View on Solscan</a></p>`);
-    } catch (e) { const cur = $$(".step", out).find((s) => !s.classList.contains("done")); if (cur) { cur.className = "step err"; cur.textContent = "✗ " + e.message; } else toast(e.message); }
+      // The buy is final on-chain now: attribute it first (signature-keyed, no session needed), then sync the order.
+      api("/api/trades/report", { method: "POST", body: { signature: sig, wallet: state.wallet, marketId: m.marketId, quoteId: q.quoteId, orderId: b.orderId } }).catch(() => {});
+      stepState(4, "", "Submitting…");
+      try {
+        await api("/api/buy/submit", { method: "POST", body: { orderId: b.orderId, signature: sig, wallet: state.wallet } });
+        const v = await api("/api/buy/verify", { method: "POST", body: { orderId: b.orderId, signature: sig, wallet: state.wallet } });
+        stepState(4, "done", `Panta status: ${v.status}`);
+      } catch (e) { stepState(4, "done", `Bought on-chain; Panta order sync pending (${e.message})`); }
+    } catch (e) { failStep(out, e); }
   };
 }
 
@@ -254,19 +278,31 @@ async function createFlow(f, kind) {
   out.innerHTML = steps(["Upload cover + quote fee (Panta)", "Build create transaction", "Sign in Phantom", "Send via Solami RPC", "Register market (Panta)"]);
   try {
     stepState(0, "", "Uploading & quoting…");
-    const q = await api("/api/create/quote", { method: "POST", body: { fixtureId: f.id, kind, wallet: state.wallet } });
+    // Panta's create endpoints occasionally answer "unexpected ... failure"; a short retry usually succeeds.
+    const q = await retryWhile(() => api("/api/create/quote", { method: "POST", body: { fixtureId: f.id, kind, wallet: state.wallet } }), /unexpected/i, 3, 2500);
     stepState(0, "done", `Fee ${(+q.paymentUsdc / 1e6).toFixed(2)} USDC (liquidity ${(+q.liquidityInjectionUsdc / 1e6).toFixed(2)}) · market ${short(q.expectedEventPda)}`);
     stepState(1, "", "Building…");
-    const b = await api("/api/create/build", { method: "POST", body: { createId: q.createId, wallet: state.wallet } });
+    const b = await retryWhile(() => api("/api/create/build", { method: "POST", body: { createId: q.createId, wallet: state.wallet } }), /unexpected/i, 3, 2500);
     stepState(1, "done", "Unsigned transaction ready");
     stepState(2, "", "Waiting for Phantom…");
     const tx = solanaWeb3.VersionedTransaction.deserialize(b64ToBytes(b.transaction));
     const sig = await signAndSend(tx);
-    stepState(2, "done", "Signed"); stepState(3, "done", `Landed: ${short(sig)}`);
+    stepState(2, "done", "Signed"); stepState(3, "done", `Confirmed: ${short(sig)}`);
     stepState(4, "", "Registering…");
-    const r = await api("/api/create/register", { method: "POST", body: { createId: q.createId, signature: sig } });
-    stepState(4, "done", `Live on Panta: ${short(r.marketId)}`);
-  } catch (e) { const cur = $$(".step", out).find((s) => !s.classList.contains("done")); if (cur) { cur.className = "step err"; cur.textContent = "✗ " + e.message; } }
+    const register = () => api("/api/create/register", { method: "POST", body: { createId: q.createId, signature: sig } });
+    try {
+      // Panta verifies at its own commitment; registration is idempotent for the same createId + signature.
+      const r = await retryWhile(register, /TX_NOT_FOUND/);
+      stepState(4, "done", `Live on Panta: ${short(r.marketId)}`);
+    } catch (e) {
+      stepState(4, "err", `Created on-chain, registration pending: ${e.message}`);
+      out.insertAdjacentHTML("beforeend", `<button class="btn" id="retry-reg">Retry registration</button>`);
+      $("#retry-reg").onclick = async () => {
+        try { const r = await register(); stepState(4, "done", `Live on Panta: ${short(r.marketId)}`); $("#retry-reg").remove(); }
+        catch (err) { toast(err.message, 7000); }
+      };
+    }
+  } catch (e) { failStep(out, e); }
 }
 
 /* ---------- portfolio ---------- */
@@ -312,7 +348,7 @@ async function startTape() {
   es.addEventListener("status", (e) => renderTapeStatus(JSON.parse(e.data)));
 }
 function renderTapeStatus(s) {
-  $("#tape-status").innerHTML = `${s.connected ? "● streaming" : "○ connecting"} via <b>${esc(s.provider)}</b> · ${s.messages} live messages${s.lastSlot ? " · slot " + s.lastSlot : ""}${s.error ? ` · <span class="step err">${esc(s.error)}</span>` : ""}`;
+  $("#tape-status").innerHTML = `${s.connected ? "● live" : "○ connecting"} via <b>${esc(s.provider)}</b>${s.mode ? ` (${esc(s.mode)})` : ""} · ${s.messages} new transactions since start${s.lastSlot ? " · slot " + s.lastSlot : ""}${s.error ? ` · <span class="step err">${esc(s.error)}</span>` : ""}`;
 }
 
 /* ---------- agents ---------- */
