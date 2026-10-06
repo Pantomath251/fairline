@@ -1,0 +1,6628 @@
+{
+ "address": "6gM5afTQBq5VZCfgpGqcsqzfWd5maLSCKWtGjbEobZMp",
+ "metadata": {
+  "name": "balr_market",
+  "version": "0.1.0",
+  "spec": "0.1.0",
+  "description": "Created with Anchor"
+ },
+ "instructions": [
+  {
+   "name": "add_to_whitelist",
+   "docs": [
+    "Adds a single wallet to the creator whitelist.",
+    "Only callable by the whitelist authority."
+   ],
+   "discriminator": [
+    157,
+    211,
+    52,
+    54,
+    144,
+    81,
+    5,
+    55
+   ],
+   "accounts": [
+    {
+     "name": "creator_whitelist",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         99,
+         114,
+         101,
+         97,
+         116,
+         111,
+         114,
+         95,
+         119,
+         104,
+         105,
+         116,
+         101,
+         108,
+         105,
+         115,
+         116
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "authority",
+     "docs": [
+      "Must be the whitelist `authority`."
+     ],
+     "signer": true
+    }
+   ],
+   "args": [
+    {
+     "name": "wallet",
+     "type": "pubkey"
+    }
+   ]
+  },
+  {
+   "name": "approve_primary_event",
+   "discriminator": [
+    44,
+    162,
+    104,
+    249,
+    147,
+    233,
+    70,
+    140
+   ],
+   "accounts": [
+    {
+     "name": "admin",
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "market_config",
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "event",
+     "writable": true
+    },
+    {
+     "name": "review_request",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         114,
+         101,
+         118,
+         105,
+         101,
+         119,
+         95,
+         114,
+         101,
+         113,
+         117,
+         101,
+         115,
+         116
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       }
+      ]
+     }
+    },
+    {
+     "name": "requester",
+     "writable": true
+    },
+    {
+     "name": "treasury",
+     "writable": true
+    }
+   ],
+   "args": []
+  },
+  {
+   "name": "batch_add_to_whitelist",
+   "docs": [
+    "Adds multiple wallets to the creator whitelist in one transaction.",
+    "Only callable by the whitelist authority."
+   ],
+   "discriminator": [
+    71,
+    20,
+    191,
+    71,
+    189,
+    135,
+    93,
+    201
+   ],
+   "accounts": [
+    {
+     "name": "creator_whitelist",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         99,
+         114,
+         101,
+         97,
+         116,
+         111,
+         114,
+         95,
+         119,
+         104,
+         105,
+         116,
+         101,
+         108,
+         105,
+         115,
+         116
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "authority",
+     "docs": [
+      "Must be the whitelist `authority`."
+     ],
+     "signer": true
+    }
+   ],
+   "args": [
+    {
+     "name": "wallets",
+     "type": {
+      "vec": "pubkey"
+     }
+    }
+   ]
+  },
+  {
+   "name": "can_create_market",
+   "docs": [
+    "Read-only view: returns whether `wallet` may currently create a market.",
+    "Intended for client-side simulation (preflight check)."
+   ],
+   "discriminator": [
+    132,
+    33,
+    123,
+    27,
+    12,
+    41,
+    59,
+    68
+   ],
+   "accounts": [
+    {
+     "name": "creator_whitelist",
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         99,
+         114,
+         101,
+         97,
+         116,
+         111,
+         114,
+         95,
+         119,
+         104,
+         105,
+         116,
+         101,
+         108,
+         105,
+         115,
+         116
+        ]
+       }
+      ]
+     }
+    }
+   ],
+   "args": [
+    {
+     "name": "wallet",
+     "type": "pubkey"
+    }
+   ],
+   "returns": {
+    "defined": {
+     "name": "CanCreateMarketResult"
+    }
+   }
+  },
+  {
+   "name": "cancel_primary_event",
+   "discriminator": [
+    96,
+    255,
+    141,
+    250,
+    144,
+    62,
+    5,
+    227
+   ],
+   "accounts": [
+    {
+     "name": "admin",
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "market_config",
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "event",
+     "writable": true
+    },
+    {
+     "name": "vault",
+     "writable": true
+    },
+    {
+     "name": "creator_fee_vault",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         99,
+         114,
+         101,
+         97,
+         116,
+         111,
+         114,
+         95,
+         102,
+         101,
+         101,
+         95,
+         118,
+         97,
+         117,
+         108,
+         116
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       }
+      ]
+     }
+    },
+    {
+     "name": "review_request",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         114,
+         101,
+         118,
+         105,
+         101,
+         119,
+         95,
+         114,
+         101,
+         113,
+         117,
+         101,
+         115,
+         116
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       }
+      ]
+     }
+    },
+    {
+     "name": "requester",
+     "writable": true
+    },
+    {
+     "name": "treasury",
+     "writable": true
+    },
+    {
+     "name": "burn_address",
+     "writable": true,
+     "address": "1nc1nerator11111111111111111111111111111111"
+    }
+   ],
+   "args": []
+  },
+  {
+   "name": "cancel_secondary_order",
+   "discriminator": [
+    187,
+    93,
+    218,
+    166,
+    4,
+    25,
+    62,
+    12
+   ],
+   "accounts": [
+    {
+     "name": "user",
+     "docs": [
+      "The user who owns (and is cancelling) the order"
+     ],
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "event",
+     "docs": [
+      "The event / market this order belongs to"
+     ]
+    },
+    {
+     "name": "user_position",
+     "docs": [
+      "User's position record"
+     ],
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         112,
+         111,
+         115,
+         105,
+         116,
+         105,
+         111,
+         110
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       },
+       {
+        "kind": "account",
+        "path": "user"
+       }
+      ]
+     }
+    },
+    {
+     "name": "vault",
+     "docs": [
+      "Vault PDA that holds escrowed SOL from buy orders"
+     ],
+     "writable": true
+    },
+    {
+     "name": "price_level",
+     "docs": [
+      "Price level this order was resting on"
+     ],
+     "writable": true
+    },
+    {
+     "name": "order_node",
+     "docs": [
+      "The order being cancelled (closed → rent refunded to user)"
+     ],
+     "writable": true
+    },
+    {
+     "name": "prev_order_node",
+     "docs": [
+      "Previous node in the doubly-linked list at this price level.",
+      "Required when `order_node.prev_order != Pubkey::default()`."
+     ],
+     "writable": true,
+     "optional": true
+    },
+    {
+     "name": "next_order_node",
+     "docs": [
+      "Next node in the doubly-linked list at this price level.",
+      "Required when `order_node.next_order != Pubkey::default()`."
+     ],
+     "writable": true,
+     "optional": true
+    }
+   ],
+   "args": []
+  },
+  {
+   "name": "claim_creator_fees",
+   "discriminator": [
+    0,
+    23,
+    125,
+    234,
+    156,
+    118,
+    134,
+    89
+   ],
+   "accounts": [
+    {
+     "name": "creator",
+     "docs": [
+      "The creator claiming their fees"
+     ],
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "event",
+     "docs": [
+      "The market event"
+     ]
+    },
+    {
+     "name": "creator_fee_vault",
+     "docs": [
+      "Creator fee vault holding accumulated fees"
+     ],
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         99,
+         114,
+         101,
+         97,
+         116,
+         111,
+         114,
+         95,
+         102,
+         101,
+         101,
+         95,
+         118,
+         97,
+         117,
+         108,
+         116
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       }
+      ]
+     }
+    }
+   ],
+   "args": []
+  },
+  {
+   "name": "claim_insurance_vault",
+   "docs": [
+    "Transfers lamports from the insurance vault to a recipient.",
+    "The signer must be the Squads vault PDA stored as the vault's authority."
+   ],
+   "discriminator": [
+    12,
+    238,
+    68,
+    26,
+    193,
+    28,
+    13,
+    99
+   ],
+   "accounts": [
+    {
+     "name": "authority",
+     "docs": [
+      "Must match `insurance_vault.authority` - the Squads vault PDA.",
+      "Squads enforces multisig threshold before allowing this key to sign."
+     ],
+     "signer": true
+    },
+    {
+     "name": "market_config",
+     "docs": [
+      "Needed only to derive/validate the insurance vault via its bump."
+     ],
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "insurance_vault",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         105,
+         110,
+         115,
+         117,
+         114,
+         97,
+         110,
+         99,
+         101,
+         95,
+         118,
+         97,
+         117,
+         108,
+         116
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "recipient",
+     "docs": [
+      "Destination for the claimed lamports. Any writable account is accepted;",
+      "the authority is responsible for pointing this at the right wallet."
+     ],
+     "writable": true
+    }
+   ],
+   "args": [
+    {
+     "name": "amount",
+     "type": "u64"
+    }
+   ]
+  },
+  {
+   "name": "claim_lamports",
+   "discriminator": [
+    74,
+    172,
+    28,
+    96,
+    135,
+    122,
+    236,
+    176
+   ],
+   "accounts": [
+    {
+     "name": "signer",
+     "docs": [
+      "Signer - either the position owner or an admin"
+     ],
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "market_config",
+     "docs": [
+      "Global config containing admin keys"
+     ],
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "event",
+     "docs": [
+      "The event / market context"
+     ]
+    },
+    {
+     "name": "vault",
+     "docs": [
+      "Vault PDA that holds all escrowed SOL"
+     ],
+     "writable": true
+    },
+    {
+     "name": "user_position",
+     "docs": [
+      "User's position record containing free `lamports` balance"
+     ],
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         112,
+         111,
+         115,
+         105,
+         116,
+         105,
+         111,
+         110
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       },
+       {
+        "kind": "arg",
+        "path": "user"
+       }
+      ]
+     }
+    }
+   ],
+   "args": [
+    {
+     "name": "user",
+     "type": "pubkey"
+    },
+    {
+     "name": "amount",
+     "type": {
+      "option": "u128"
+     }
+    }
+   ]
+  },
+  {
+   "name": "claim_primary_refund",
+   "discriminator": [
+    166,
+    222,
+    144,
+    27,
+    218,
+    162,
+    155,
+    106
+   ],
+   "accounts": [
+    {
+     "name": "signer",
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "market_config",
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "event",
+     "writable": true
+    },
+    {
+     "name": "vault",
+     "writable": true
+    },
+    {
+     "name": "user_position",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         112,
+         111,
+         115,
+         105,
+         116,
+         105,
+         111,
+         110
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       },
+       {
+        "kind": "arg",
+        "path": "user"
+       }
+      ]
+     }
+    }
+   ],
+   "args": [
+    {
+     "name": "user",
+     "type": "pubkey"
+    }
+   ]
+  },
+  {
+   "name": "claim_winnings",
+   "discriminator": [
+    161,
+    215,
+    24,
+    59,
+    14,
+    236,
+    242,
+    221
+   ],
+   "accounts": [
+    {
+     "name": "signer",
+     "docs": [
+      "Signer - either the position owner or an admin; pays rent for WinClaim"
+     ],
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "market_config",
+     "docs": [
+      "Global configuration containing admin pubkeys"
+     ],
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "event",
+     "docs": [
+      "The resolved market - read for primary_pool_lamports and resolution state"
+     ]
+    },
+    {
+     "name": "vault",
+     "docs": [
+      "Vault PDA holding all escrowed SOL"
+     ],
+     "writable": true
+    },
+    {
+     "name": "user_position",
+     "docs": [
+      "User's position record - shares are NOT zeroed; WinClaim is the claim guard"
+     ],
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         112,
+         111,
+         115,
+         105,
+         116,
+         105,
+         111,
+         110
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       },
+       {
+        "kind": "arg",
+        "path": "user"
+       }
+      ]
+     }
+    },
+    {
+     "name": "win_claim",
+     "docs": [
+      "Claim receipt PDA - created here; its existence prevents double-claiming.",
+      "Keyed by (event, user) so one record exists per market per claimant."
+     ],
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         119,
+         105,
+         110,
+         95,
+         99,
+         108,
+         97,
+         105,
+         109
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       },
+       {
+        "kind": "arg",
+        "path": "user"
+       }
+      ]
+     }
+    },
+    {
+     "name": "system_program",
+     "address": "11111111111111111111111111111111"
+    }
+   ],
+   "args": [
+    {
+     "name": "_user",
+     "type": "pubkey"
+    }
+   ]
+  },
+  {
+   "name": "correct_self_trade_position",
+   "docs": [
+    "Admin-only correction for self-trade Scenario B victims.",
+    "",
+    "Before the self-trade guard, a BUY taker that matched their own resting",
+    "ASK suffered silent alias corruption: `cp_pos.lamports` and",
+    "`cp_pos.locked_*_shares` writes were overwritten by Anchor's named-account",
+    "serialisation of `user_position`.  The SOL they paid is already in the",
+    "vault - this instruction credits it back and releases the stale share lock.",
+    "",
+    "Requires 2-of-3 admin quorum.  Pass the second admin as a signer in",
+    "`remaining_accounts` (same pattern as `update_config`)."
+   ],
+   "discriminator": [
+    145,
+    207,
+    201,
+    47,
+    38,
+    174,
+    151,
+    145
+   ],
+   "accounts": [
+    {
+     "name": "admin",
+     "docs": [
+      "Primary admin signer.  Must be present in `market_config.admin`."
+     ],
+     "signer": true
+    },
+    {
+     "name": "market_config",
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "event",
+     "docs": [
+      "The market the victim traded on."
+     ]
+    },
+    {
+     "name": "victim_position",
+     "docs": [
+      "Victim's position - the one whose `lamports` and/or `locked_*_shares`",
+      "need correcting."
+     ],
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         112,
+         111,
+         115,
+         105,
+         116,
+         105,
+         111,
+         110
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       },
+       {
+        "kind": "account",
+        "path": "victim_position.owner",
+        "account": "UserPosition"
+       }
+      ]
+     }
+    }
+   ],
+   "args": [
+    {
+     "name": "lamports_to_credit",
+     "type": "u128"
+    },
+    {
+     "name": "yes_shares_to_unlock",
+     "type": "u128"
+    },
+    {
+     "name": "no_shares_to_unlock",
+     "type": "u128"
+    }
+   ]
+  },
+  {
+   "name": "create_breaking_event",
+   "discriminator": [
+    123,
+    174,
+    181,
+    104,
+    167,
+    174,
+    67,
+    63
+   ],
+   "accounts": [
+    {
+     "name": "creator",
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "market_config",
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "creator_whitelist",
+     "docs": [
+      "The protocol creator whitelist - enforces restricted-mode gating."
+     ],
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         99,
+         114,
+         101,
+         97,
+         116,
+         111,
+         114,
+         95,
+         119,
+         104,
+         105,
+         116,
+         101,
+         108,
+         105,
+         115,
+         116
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "event",
+     "writable": true
+    },
+    {
+     "name": "vault",
+     "writable": true
+    },
+    {
+     "name": "creator_fee_vault",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         99,
+         114,
+         101,
+         97,
+         116,
+         111,
+         114,
+         95,
+         102,
+         101,
+         101,
+         95,
+         118,
+         97,
+         117,
+         108,
+         116
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       }
+      ]
+     }
+    },
+    {
+     "name": "creator_position",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         112,
+         111,
+         115,
+         105,
+         116,
+         105,
+         111,
+         110
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       },
+       {
+        "kind": "account",
+        "path": "creator"
+       }
+      ]
+     }
+    },
+    {
+     "name": "treasury",
+     "writable": true
+    },
+    {
+     "name": "system_program",
+     "address": "11111111111111111111111111111111"
+    }
+   ],
+   "args": [
+    {
+     "name": "event_start_time",
+     "type": "i64"
+    },
+    {
+     "name": "end_time",
+     "type": "i64"
+    },
+    {
+     "name": "resolution_time",
+     "type": "i64"
+    },
+    {
+     "name": "question",
+     "type": "string"
+    },
+    {
+     "name": "initial_lamports",
+     "type": "u128"
+    },
+    {
+     "name": "seed_yes_side",
+     "type": "bool"
+    },
+    {
+     "name": "resolution_rule",
+     "type": "string"
+    },
+    {
+     "name": "source_of_truth",
+     "type": {
+      "vec": "string"
+     }
+    },
+    {
+     "name": "event_in_progress",
+     "type": "bool"
+    }
+   ]
+  },
+  {
+   "name": "create_event",
+   "discriminator": [
+    49,
+    219,
+    29,
+    203,
+    22,
+    98,
+    100,
+    87
+   ],
+   "accounts": [
+    {
+     "name": "creator",
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "market_config",
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "creator_whitelist",
+     "docs": [
+      "The protocol creator whitelist - enforces restricted-mode gating."
+     ],
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         99,
+         114,
+         101,
+         97,
+         116,
+         111,
+         114,
+         95,
+         119,
+         104,
+         105,
+         116,
+         101,
+         108,
+         105,
+         115,
+         116
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "event",
+     "writable": true
+    },
+    {
+     "name": "vault",
+     "writable": true
+    },
+    {
+     "name": "creator_fee_vault",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         99,
+         114,
+         101,
+         97,
+         116,
+         111,
+         114,
+         95,
+         102,
+         101,
+         101,
+         95,
+         118,
+         97,
+         117,
+         108,
+         116
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       }
+      ]
+     }
+    },
+    {
+     "name": "creator_position",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         112,
+         111,
+         115,
+         105,
+         116,
+         105,
+         111,
+         110
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       },
+       {
+        "kind": "account",
+        "path": "creator"
+       }
+      ]
+     }
+    },
+    {
+     "name": "treasury",
+     "docs": [
+      "Protocol treasury receiving the 1 SOL creation fee.",
+      "",
+      "SECURITY: The address is constrained to `market_config.treasury` which is",
+      "itself stored in the canonical market_config PDA (seed-validated above).",
+      "The client does NOT supply this address - Anchor resolves it directly from",
+      "the on-chain MarketConfig state. There is no client-supplied input that can",
+      "redirect this account to an attacker-controlled wallet."
+     ],
+     "writable": true
+    },
+    {
+     "name": "system_program",
+     "address": "11111111111111111111111111111111"
+    }
+   ],
+   "args": [
+    {
+     "name": "start_time",
+     "type": "i64"
+    },
+    {
+     "name": "end_time",
+     "type": "i64"
+    },
+    {
+     "name": "resolution_time",
+     "type": "i64"
+    },
+    {
+     "name": "question",
+     "type": "string"
+    },
+    {
+     "name": "initial_lamports",
+     "type": "u128"
+    },
+    {
+     "name": "seed_yes_side",
+     "type": "bool"
+    },
+    {
+     "name": "resolution_rule",
+     "type": "string"
+    },
+    {
+     "name": "source_of_truth",
+     "type": {
+      "vec": "string"
+     }
+    }
+   ]
+  },
+  {
+   "name": "dispute_resolved_event",
+   "discriminator": [
+    178,
+    191,
+    235,
+    163,
+    108,
+    95,
+    72,
+    254
+   ],
+   "accounts": [
+    {
+     "name": "disputer",
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "market_config",
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "event",
+     "writable": true
+    },
+    {
+     "name": "review_request",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         114,
+         101,
+         118,
+         105,
+         101,
+         119,
+         95,
+         114,
+         101,
+         113,
+         117,
+         101,
+         115,
+         116
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       }
+      ]
+     }
+    },
+    {
+     "name": "user_position",
+     "docs": [
+      "Disputer's position - must hold at least one share to be eligible."
+     ],
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         112,
+         111,
+         115,
+         105,
+         116,
+         105,
+         111,
+         110
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       },
+       {
+        "kind": "account",
+        "path": "disputer"
+       }
+      ]
+     }
+    },
+    {
+     "name": "system_program",
+     "address": "11111111111111111111111111111111"
+    }
+   ],
+   "args": [
+    {
+     "name": "proposed_yes_wins",
+     "type": "bool"
+    }
+   ]
+  },
+  {
+   "name": "force_cancel_order",
+   "docs": [
+    "Permissionless crank that unwinds a resting limit order on a resolved",
+    "market and returns locked funds to the original order owner.",
+    "The cranker earns the `OrderNode` account rent as an incentive."
+   ],
+   "discriminator": [
+    10,
+    45,
+    231,
+    51,
+    229,
+    251,
+    182,
+    45
+   ],
+   "accounts": [
+    {
+     "name": "cranker",
+     "docs": [
+      "Anyone may crank this on a resolved market.",
+      "Earns the `OrderNode` account rent via `close = cranker`."
+     ],
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "event",
+     "docs": [
+      "The resolved market - checked for `is_resolved` inside the handler."
+     ]
+    },
+    {
+     "name": "owner",
+     "docs": [
+      "Original order owner.  Receives locked SOL (bid) or has shares",
+      "restored to their position (ask).  Never the cranker.",
+      "",
+      "constraint below; only receives lamports (no data access)."
+     ],
+     "writable": true
+    },
+    {
+     "name": "user_position",
+     "docs": [
+      "Owner's position - shares are restored here for ask orders."
+     ],
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         112,
+         111,
+         115,
+         105,
+         116,
+         105,
+         111,
+         110
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       },
+       {
+        "kind": "account",
+        "path": "owner"
+       }
+      ]
+     }
+    },
+    {
+     "name": "vault",
+     "docs": [
+      "Market vault - SOL is returned from here for bid orders."
+     ],
+     "writable": true
+    },
+    {
+     "name": "price_level",
+     "docs": [
+      "Price level the order was resting on - aggregates are decremented."
+     ],
+     "writable": true
+    },
+    {
+     "name": "order_node",
+     "docs": [
+      "The resting order being unwound.",
+      "Closed at end of instruction; rent goes to `cranker` as incentive."
+     ],
+     "writable": true
+    },
+    {
+     "name": "prev_order_node",
+     "docs": [
+      "Previous node in the doubly-linked list at this price level.",
+      "Required when `order_node.prev_order != Pubkey::default()`."
+     ],
+     "writable": true,
+     "optional": true
+    },
+    {
+     "name": "next_order_node",
+     "docs": [
+      "Next node in the doubly-linked list at this price level.",
+      "Required when `order_node.next_order != Pubkey::default()`."
+     ],
+     "writable": true,
+     "optional": true
+    }
+   ],
+   "args": []
+  },
+  {
+   "name": "get_event_pool_total",
+   "discriminator": [
+    240,
+    249,
+    192,
+    28,
+    62,
+    194,
+    56,
+    212
+   ],
+   "accounts": [
+    {
+     "name": "event",
+     "docs": [
+      "The event account to query"
+     ]
+    },
+    {
+     "name": "vault",
+     "docs": [
+      "The vault PDA holding SOL for this event"
+     ]
+    }
+   ],
+   "args": [],
+   "returns": {
+    "defined": {
+     "name": "GetEventPoolTotalResult"
+    }
+   }
+  },
+  {
+   "name": "graduate_breaking_event",
+   "discriminator": [
+    236,
+    40,
+    129,
+    175,
+    228,
+    156,
+    70,
+    100
+   ],
+   "accounts": [
+    {
+     "name": "cranker",
+     "docs": [
+      "Anyone can crank this - no special permissions needed."
+     ],
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "market_config",
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "event",
+     "writable": true
+    },
+    {
+     "name": "vault",
+     "writable": true
+    },
+    {
+     "name": "creator_fee_vault",
+     "docs": [
+      "Creator fee vault - swept to treasury on the failure path."
+     ],
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         99,
+         114,
+         101,
+         97,
+         116,
+         111,
+         114,
+         95,
+         102,
+         101,
+         101,
+         95,
+         118,
+         97,
+         117,
+         108,
+         116
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       }
+      ]
+     }
+    },
+    {
+     "name": "treasury",
+     "docs": [
+      "Treasury receives swept creator fees on the failure path."
+     ],
+     "writable": true
+    },
+    {
+     "name": "insurance_vault",
+     "docs": [
+      "Global insurance vault - receives failed-market liquidity instead of",
+      "the incinerator. Must be initialised via `initialize_insurance_vault`",
+      "before any market can be settled."
+     ],
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         105,
+         110,
+         115,
+         117,
+         114,
+         97,
+         110,
+         99,
+         101,
+         95,
+         118,
+         97,
+         117,
+         108,
+         116
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "system_program",
+     "address": "11111111111111111111111111111111"
+    }
+   ],
+   "args": []
+  },
+  {
+   "name": "graduate_market",
+   "discriminator": [
+    202,
+    28,
+    33,
+    115,
+    186,
+    96,
+    1,
+    90
+   ],
+   "accounts": [
+    {
+     "name": "cranker",
+     "docs": [
+      "Anyone can crank this - no special permissions needed."
+     ],
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "market_config",
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "event",
+     "writable": true
+    },
+    {
+     "name": "vault",
+     "writable": true
+    },
+    {
+     "name": "creator_fee_vault",
+     "docs": [
+      "Creator fee vault - swept to treasury on the failure path."
+     ],
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         99,
+         114,
+         101,
+         97,
+         116,
+         111,
+         114,
+         95,
+         102,
+         101,
+         101,
+         95,
+         118,
+         97,
+         117,
+         108,
+         116
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       }
+      ]
+     }
+    },
+    {
+     "name": "treasury",
+     "docs": [
+      "Treasury receives swept creator fees on the failure path."
+     ],
+     "writable": true
+    },
+    {
+     "name": "insurance_vault",
+     "docs": [
+      "Global insurance vault - receives failed-market liquidity instead of",
+      "the incinerator. Must be initialised via `initialize_insurance_vault`",
+      "before any market can be settled."
+     ],
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         105,
+         110,
+         115,
+         117,
+         114,
+         97,
+         110,
+         99,
+         101,
+         95,
+         118,
+         97,
+         117,
+         108,
+         116
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "system_program",
+     "address": "11111111111111111111111111111111"
+    }
+   ],
+   "args": []
+  },
+  {
+   "name": "initialize",
+   "discriminator": [
+    175,
+    175,
+    109,
+    31,
+    13,
+    152,
+    155,
+    237
+   ],
+   "accounts": [
+    {
+     "name": "market_config",
+     "docs": [
+      "The global market configuration PDA – created during this instruction"
+     ],
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "admin",
+     "docs": [
+      "The admin/signer paying for account creation"
+     ],
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "program",
+     "address": "6gM5afTQBq5VZCfgpGqcsqzfWd5maLSCKWtGjbEobZMp"
+    },
+    {
+     "name": "program_data"
+    },
+    {
+     "name": "system_program",
+     "address": "11111111111111111111111111111111"
+    }
+   ],
+   "args": [
+    {
+     "name": "admins",
+     "type": {
+      "array": [
+       "pubkey",
+       3
+      ]
+     }
+    },
+    {
+     "name": "relayer",
+     "type": "pubkey"
+    },
+    {
+     "name": "treasury",
+     "type": "pubkey"
+    },
+    {
+     "name": "creation_fee",
+     "type": "u64"
+    },
+    {
+     "name": "minimum_start_delay",
+     "type": "i64"
+    },
+    {
+     "name": "primary_fee_bps",
+     "type": "u64"
+    },
+    {
+     "name": "secondary_fee_bps",
+     "type": "u64"
+    },
+    {
+     "name": "graduation_threshold",
+     "type": "u128"
+    },
+    {
+     "name": "price_tick_size",
+     "type": "u64"
+    },
+    {
+     "name": "max_traverse_per_tx",
+     "type": "u32"
+    },
+    {
+     "name": "neutral_liquidity",
+     "type": "u128"
+    }
+   ]
+  },
+  {
+   "name": "initialize_insurance_vault",
+   "docs": [
+    "Creates the global `InsuranceVault` PDA and records the Squads vault",
+    "authority that may claim from it. Must be called once after `initialize`."
+   ],
+   "discriminator": [
+    111,
+    217,
+    170,
+    216,
+    132,
+    97,
+    98,
+    30
+   ],
+   "accounts": [
+    {
+     "name": "admin",
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "market_config",
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "insurance_vault",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         105,
+         110,
+         115,
+         117,
+         114,
+         97,
+         110,
+         99,
+         101,
+         95,
+         118,
+         97,
+         117,
+         108,
+         116
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "system_program",
+     "address": "11111111111111111111111111111111"
+    }
+   ],
+   "args": [
+    {
+     "name": "authority",
+     "type": "pubkey"
+    }
+   ]
+  },
+  {
+   "name": "initialize_whitelist",
+   "docs": [
+    "Initialises the singleton `CreatorWhitelist` PDA. Must be called once",
+    "after `initialize`. The signer becomes the whitelist authority."
+   ],
+   "discriminator": [
+    223,
+    228,
+    11,
+    219,
+    112,
+    174,
+    108,
+    18
+   ],
+   "accounts": [
+    {
+     "name": "creator_whitelist",
+     "docs": [
+      "The singleton whitelist PDA - created during this instruction."
+     ],
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         99,
+         114,
+         101,
+         97,
+         116,
+         111,
+         114,
+         95,
+         119,
+         104,
+         105,
+         116,
+         101,
+         108,
+         105,
+         115,
+         116
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "market_config",
+     "docs": [
+      "The canonical protocol config PDA - used to verify admin membership."
+     ],
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "admin",
+     "docs": [
+      "Must be one of the three MarketConfig admins and pays for account creation."
+     ],
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "system_program",
+     "address": "11111111111111111111111111111111"
+    }
+   ],
+   "args": []
+  },
+  {
+   "name": "migrate_whitelist",
+   "docs": [
+    "One-time migration: excises the stale `restricted_mode` byte at offset 40",
+    "from the on-chain `CreatorWhitelist` account so that the new (smaller)",
+    "struct layout can deserialise it correctly.",
+    "Permissionless and idempotent - safe to call by anyone, safe to call twice."
+   ],
+   "discriminator": [
+    71,
+    157,
+    104,
+    186,
+    135,
+    128,
+    86,
+    156
+   ],
+   "accounts": [
+    {
+     "name": "creator_whitelist",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         99,
+         114,
+         101,
+         97,
+         116,
+         111,
+         114,
+         95,
+         119,
+         104,
+         105,
+         116,
+         101,
+         108,
+         105,
+         115,
+         116
+        ]
+       }
+      ]
+     }
+    }
+   ],
+   "args": []
+  },
+  {
+   "name": "primary_order",
+   "discriminator": [
+    42,
+    135,
+    249,
+    48,
+    230,
+    60,
+    223,
+    84
+   ],
+   "accounts": [
+    {
+     "name": "user",
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "event",
+     "writable": true
+    },
+    {
+     "name": "market_config",
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "vault",
+     "writable": true
+    },
+    {
+     "name": "creator_fee_vault",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         99,
+         114,
+         101,
+         97,
+         116,
+         111,
+         114,
+         95,
+         102,
+         101,
+         101,
+         95,
+         118,
+         97,
+         117,
+         108,
+         116
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       }
+      ]
+     }
+    },
+    {
+     "name": "user_position",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         112,
+         111,
+         115,
+         105,
+         116,
+         105,
+         111,
+         110
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       },
+       {
+        "kind": "account",
+        "path": "user"
+       }
+      ]
+     }
+    },
+    {
+     "name": "treasury",
+     "writable": true
+    },
+    {
+     "name": "system_program",
+     "address": "11111111111111111111111111111111"
+    }
+   ],
+   "args": [
+    {
+     "name": "side",
+     "type": {
+      "defined": {
+       "name": "OrderSide"
+      }
+     }
+    },
+    {
+     "name": "lamports",
+     "type": "u64"
+    }
+   ]
+  },
+  {
+   "name": "reap_filled_order",
+   "discriminator": [
+    237,
+    127,
+    119,
+    55,
+    42,
+    173,
+    161,
+    125
+   ],
+   "accounts": [
+    {
+     "name": "user",
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "event"
+    },
+    {
+     "name": "price_level",
+     "writable": true
+    },
+    {
+     "name": "order_node",
+     "writable": true
+    },
+    {
+     "name": "prev_order_node",
+     "docs": [
+      "Previous node in the doubly-linked list at this price level.",
+      "Required when `order_node.prev_order != Pubkey::default()`."
+     ],
+     "writable": true,
+     "optional": true
+    },
+    {
+     "name": "next_order_node",
+     "docs": [
+      "Next node in the doubly-linked list at this price level.",
+      "Required when `order_node.next_order != Pubkey::default()`."
+     ],
+     "writable": true,
+     "optional": true
+    }
+   ],
+   "args": []
+  },
+  {
+   "name": "remove_from_whitelist",
+   "docs": [
+    "Removes a wallet from the creator whitelist.",
+    "Only callable by the whitelist authority."
+   ],
+   "discriminator": [
+    7,
+    144,
+    216,
+    239,
+    243,
+    236,
+    193,
+    235
+   ],
+   "accounts": [
+    {
+     "name": "creator_whitelist",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         99,
+         114,
+         101,
+         97,
+         116,
+         111,
+         114,
+         95,
+         119,
+         104,
+         105,
+         116,
+         101,
+         108,
+         105,
+         115,
+         116
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "authority",
+     "signer": true
+    }
+   ],
+   "args": [
+    {
+     "name": "wallet",
+     "type": "pubkey"
+    }
+   ]
+  },
+  {
+   "name": "report_primary_event",
+   "discriminator": [
+    167,
+    236,
+    213,
+    155,
+    199,
+    173,
+    105,
+    140
+   ],
+   "accounts": [
+    {
+     "name": "reporter",
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "event",
+     "writable": true
+    },
+    {
+     "name": "market_config",
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "vault"
+    },
+    {
+     "name": "review_request",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         114,
+         101,
+         118,
+         105,
+         101,
+         119,
+         95,
+         114,
+         101,
+         113,
+         117,
+         101,
+         115,
+         116
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       }
+      ]
+     }
+    },
+    {
+     "name": "system_program",
+     "address": "11111111111111111111111111111111"
+    }
+   ],
+   "args": []
+  },
+  {
+   "name": "resolve_event",
+   "discriminator": [
+    184,
+    55,
+    78,
+    47,
+    114,
+    38,
+    50,
+    90
+   ],
+   "accounts": [
+    {
+     "name": "oracle",
+     "docs": [
+      "Signer authorized to resolve this market (relayer or admin).",
+      "For the dispute path, must be an admin."
+     ],
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "market_config",
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "event",
+     "writable": true
+    },
+    {
+     "name": "vault",
+     "docs": [
+      "Vault needed for Breaking Market graduation sync."
+     ]
+    },
+    {
+     "name": "system_program",
+     "address": "11111111111111111111111111111111"
+    }
+   ],
+   "args": [
+    {
+     "name": "yes_wins",
+     "type": "bool"
+    }
+   ]
+  },
+  {
+   "name": "secondary_limit_order",
+   "discriminator": [
+    11,
+    122,
+    73,
+    2,
+    99,
+    230,
+    232,
+    149
+   ],
+   "accounts": [
+    {
+     "name": "user",
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "market_config",
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "event",
+     "writable": true
+    },
+    {
+     "name": "user_position",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         112,
+         111,
+         115,
+         105,
+         116,
+         105,
+         111,
+         110
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       },
+       {
+        "kind": "account",
+        "path": "user"
+       }
+      ]
+     }
+    },
+    {
+     "name": "price_level",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         108,
+         101,
+         118,
+         101,
+         108
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       },
+       {
+        "kind": "arg",
+        "path": "price_lamports"
+       }
+      ]
+     }
+    },
+    {
+     "name": "order_node",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         111,
+         114,
+         100,
+         101,
+         114
+        ]
+       },
+       {
+        "kind": "arg",
+        "path": "price_level_key"
+       },
+       {
+        "kind": "account",
+        "path": "user"
+       },
+       {
+        "kind": "arg",
+        "path": "client_nonce"
+       }
+      ]
+     }
+    },
+    {
+     "name": "vault",
+     "writable": true
+    },
+    {
+     "name": "creator_fee_vault",
+     "docs": [
+      "FIX [BUG-F]: Creator fee vault receives 20% of every secondary trade fee."
+     ],
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         99,
+         114,
+         101,
+         97,
+         116,
+         111,
+         114,
+         95,
+         102,
+         101,
+         101,
+         95,
+         118,
+         97,
+         117,
+         108,
+         116
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       }
+      ]
+     }
+    },
+    {
+     "name": "treasury",
+     "writable": true
+    },
+    {
+     "name": "system_program",
+     "address": "11111111111111111111111111111111"
+    }
+   ],
+   "args": [
+    {
+     "name": "side",
+     "type": {
+      "defined": {
+       "name": "OrderSide"
+      }
+     }
+    },
+    {
+     "name": "price_lamports",
+     "type": "u64"
+    },
+    {
+     "name": "amount_shares",
+     "type": "u64"
+    },
+    {
+     "name": "buy",
+     "type": "bool"
+    },
+    {
+     "name": "client_nonce",
+     "type": "u64"
+    },
+    {
+     "name": "price_level_key",
+     "type": "pubkey"
+    }
+   ]
+  },
+  {
+   "name": "settle_failed_market",
+   "discriminator": [
+    194,
+    59,
+    58,
+    211,
+    122,
+    176,
+    215,
+    95
+   ],
+   "accounts": [
+    {
+     "name": "caller",
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "market_config",
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "event",
+     "writable": true
+    },
+    {
+     "name": "vault",
+     "writable": true
+    },
+    {
+     "name": "creator_fee_vault",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         99,
+         114,
+         101,
+         97,
+         116,
+         111,
+         114,
+         95,
+         102,
+         101,
+         101,
+         95,
+         118,
+         97,
+         117,
+         108,
+         116
+        ]
+       },
+       {
+        "kind": "account",
+        "path": "event"
+       }
+      ]
+     }
+    },
+    {
+     "name": "treasury",
+     "writable": true
+    },
+    {
+     "name": "insurance_vault",
+     "docs": [
+      "Global insurance vault - receives failed-market liquidity instead of",
+      "the incinerator. Must be initialised via `initialize_insurance_vault`",
+      "before any market can be settled."
+     ],
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         105,
+         110,
+         115,
+         117,
+         114,
+         97,
+         110,
+         99,
+         101,
+         95,
+         118,
+         97,
+         117,
+         108,
+         116
+        ]
+       }
+      ]
+     }
+    }
+   ],
+   "args": []
+  },
+  {
+   "name": "submit_oracle_result",
+   "discriminator": [
+    109,
+    25,
+    111,
+    161,
+    29,
+    78,
+    153,
+    211
+   ],
+   "accounts": [
+    {
+     "name": "oracle",
+     "docs": [
+      "Signer authorized to submit the oracle result (relayer or admin)."
+     ],
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "market_config",
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "event",
+     "writable": true
+    },
+    {
+     "name": "vault",
+     "docs": [
+      "Vault needed for Breaking Market graduation sync."
+     ]
+    },
+    {
+     "name": "system_program",
+     "address": "11111111111111111111111111111111"
+    }
+   ],
+   "args": [
+    {
+     "name": "yes_wins",
+     "type": "bool"
+    }
+   ]
+  },
+  {
+   "name": "sweep_donations",
+   "discriminator": [
+    222,
+    6,
+    23,
+    220,
+    100,
+    239,
+    135,
+    40
+   ],
+   "accounts": [
+    {
+     "name": "admin",
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "market_config",
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "insurance_vault",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         105,
+         110,
+         115,
+         117,
+         114,
+         97,
+         110,
+         99,
+         101,
+         95,
+         118,
+         97,
+         117,
+         108,
+         116
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "treasury",
+     "writable": true
+    },
+    {
+     "name": "system_program",
+     "address": "11111111111111111111111111111111"
+    }
+   ],
+   "args": [
+    {
+     "name": "target",
+     "type": {
+      "defined": {
+       "name": "DonationSweepTarget"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "update_config",
+   "discriminator": [
+    29,
+    158,
+    252,
+    191,
+    10,
+    83,
+    219,
+    99
+   ],
+   "accounts": [
+    {
+     "name": "market_config",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "admin",
+     "signer": true
+    }
+   ],
+   "args": [
+    {
+     "name": "admins",
+     "type": {
+      "option": {
+       "array": [
+        "pubkey",
+        3
+       ]
+      }
+     }
+    },
+    {
+     "name": "relayer",
+     "type": {
+      "option": "pubkey"
+     }
+    },
+    {
+     "name": "treasury",
+     "type": {
+      "option": "pubkey"
+     }
+    },
+    {
+     "name": "creation_fee",
+     "type": {
+      "option": "u64"
+     }
+    },
+    {
+     "name": "minimum_start_delay",
+     "type": {
+      "option": "i64"
+     }
+    },
+    {
+     "name": "primary_fee_bps",
+     "type": {
+      "option": "u64"
+     }
+    },
+    {
+     "name": "secondary_fee_bps",
+     "type": {
+      "option": "u64"
+     }
+    },
+    {
+     "name": "graduation_threshold",
+     "type": {
+      "option": "u128"
+     }
+    },
+    {
+     "name": "price_tick_size",
+     "type": {
+      "option": "u64"
+     }
+    },
+    {
+     "name": "max_traverse_per_tx",
+     "type": {
+      "option": "u32"
+     }
+    },
+    {
+     "name": "neutral_liquidity",
+     "type": {
+      "option": "u128"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update_insurance_authority",
+   "docs": [
+    "Updates the Squads authority on an already-initialised insurance vault.",
+    "Requires 2-of-3 admin quorum."
+   ],
+   "discriminator": [
+    114,
+    90,
+    140,
+    203,
+    191,
+    216,
+    30,
+    27
+   ],
+   "accounts": [
+    {
+     "name": "admin",
+     "writable": true,
+     "signer": true
+    },
+    {
+     "name": "market_config",
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         109,
+         97,
+         114,
+         107,
+         101,
+         116,
+         95,
+         99,
+         111,
+         110,
+         102,
+         105,
+         103
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "name": "insurance_vault",
+     "writable": true,
+     "pda": {
+      "seeds": [
+       {
+        "kind": "const",
+        "value": [
+         105,
+         110,
+         115,
+         117,
+         114,
+         97,
+         110,
+         99,
+         101,
+         95,
+         118,
+         97,
+         117,
+         108,
+         116
+        ]
+       }
+      ]
+     }
+    }
+   ],
+   "args": [
+    {
+     "name": "new_authority",
+     "type": "pubkey"
+    }
+   ]
+  }
+ ],
+ "accounts": [
+  {
+   "name": "CreatorFeeVault",
+   "discriminator": [
+    21,
+    14,
+    215,
+    247,
+    197,
+    137,
+    200,
+    121
+   ]
+  },
+  {
+   "name": "CreatorWhitelist",
+   "discriminator": [
+    61,
+    53,
+    122,
+    51,
+    66,
+    98,
+    43,
+    131
+   ]
+  },
+  {
+   "name": "Event",
+   "discriminator": [
+    125,
+    192,
+    125,
+    158,
+    9,
+    115,
+    152,
+    233
+   ]
+  },
+  {
+   "name": "InsuranceVault",
+   "discriminator": [
+    131,
+    200,
+    252,
+    180,
+    131,
+    202,
+    30,
+    144
+   ]
+  },
+  {
+   "name": "MarketConfig",
+   "discriminator": [
+    119,
+    255,
+    200,
+    88,
+    252,
+    82,
+    128,
+    24
+   ]
+  },
+  {
+   "name": "OrderNode",
+   "discriminator": [
+    220,
+    235,
+    38,
+    63,
+    66,
+    140,
+    138,
+    244
+   ]
+  },
+  {
+   "name": "PriceLevel",
+   "discriminator": [
+    236,
+    106,
+    90,
+    162,
+    188,
+    41,
+    219,
+    186
+   ]
+  },
+  {
+   "name": "ReviewRequest",
+   "discriminator": [
+    78,
+    6,
+    61,
+    102,
+    103,
+    159,
+    212,
+    66
+   ]
+  },
+  {
+   "name": "UserPosition",
+   "discriminator": [
+    251,
+    248,
+    209,
+    245,
+    83,
+    234,
+    17,
+    27
+   ]
+  },
+  {
+   "name": "Vault",
+   "discriminator": [
+    211,
+    8,
+    232,
+    43,
+    2,
+    152,
+    117,
+    119
+   ]
+  },
+  {
+   "name": "WinClaim",
+   "discriminator": [
+    79,
+    19,
+    255,
+    80,
+    183,
+    34,
+    101,
+    8
+   ]
+  }
+ ],
+ "events": [
+  {
+   "name": "BreakingEventCreated",
+   "discriminator": [
+    4,
+    0,
+    75,
+    132,
+    150,
+    229,
+    198,
+    140
+   ]
+  },
+  {
+   "name": "BreakingMarketGraduated",
+   "discriminator": [
+    108,
+    96,
+    116,
+    80,
+    206,
+    97,
+    134,
+    185
+   ]
+  },
+  {
+   "name": "CreatorFeesClaimed",
+   "discriminator": [
+    189,
+    178,
+    21,
+    181,
+    171,
+    179,
+    131,
+    1
+   ]
+  },
+  {
+   "name": "DonationsSwept",
+   "discriminator": [
+    140,
+    65,
+    176,
+    90,
+    67,
+    233,
+    151,
+    108
+   ]
+  },
+  {
+   "name": "EventCreated",
+   "discriminator": [
+    59,
+    186,
+    199,
+    175,
+    242,
+    25,
+    238,
+    94
+   ]
+  },
+  {
+   "name": "EventResolved",
+   "discriminator": [
+    10,
+    219,
+    196,
+    209,
+    32,
+    58,
+    80,
+    212
+   ]
+  },
+  {
+   "name": "FailedMarketSettled",
+   "discriminator": [
+    123,
+    112,
+    251,
+    123,
+    175,
+    110,
+    23,
+    149
+   ]
+  },
+  {
+   "name": "FilledOrderReaped",
+   "discriminator": [
+    226,
+    236,
+    111,
+    195,
+    140,
+    20,
+    53,
+    189
+   ]
+  },
+  {
+   "name": "InsuranceFundClaimed",
+   "discriminator": [
+    1,
+    189,
+    50,
+    70,
+    185,
+    154,
+    228,
+    172
+   ]
+  },
+  {
+   "name": "InsuranceFundDeposit",
+   "discriminator": [
+    164,
+    195,
+    31,
+    2,
+    239,
+    10,
+    22,
+    236
+   ]
+  },
+  {
+   "name": "MarketConfigUpdated",
+   "discriminator": [
+    7,
+    181,
+    49,
+    237,
+    18,
+    92,
+    160,
+    192
+   ]
+  },
+  {
+   "name": "MarketDisputed",
+   "discriminator": [
+    211,
+    4,
+    132,
+    75,
+    182,
+    173,
+    36,
+    0
+   ]
+  },
+  {
+   "name": "MarketGraduated",
+   "discriminator": [
+    66,
+    242,
+    94,
+    146,
+    88,
+    76,
+    225,
+    23
+   ]
+  },
+  {
+   "name": "MarketGraduationFailed",
+   "discriminator": [
+    60,
+    94,
+    141,
+    13,
+    155,
+    73,
+    134,
+    105
+   ]
+  },
+  {
+   "name": "MarketInitialized",
+   "discriminator": [
+    134,
+    160,
+    122,
+    87,
+    50,
+    3,
+    255,
+    81
+   ]
+  },
+  {
+   "name": "OracleResultSubmitted",
+   "discriminator": [
+    41,
+    76,
+    159,
+    107,
+    100,
+    6,
+    168,
+    135
+   ]
+  },
+  {
+   "name": "OrderCancelled",
+   "discriminator": [
+    108,
+    56,
+    128,
+    68,
+    168,
+    113,
+    168,
+    239
+   ]
+  },
+  {
+   "name": "OrderForceCancelled",
+   "discriminator": [
+    5,
+    159,
+    68,
+    129,
+    40,
+    144,
+    29,
+    221
+   ]
+  },
+  {
+   "name": "OrderMatched",
+   "discriminator": [
+    211,
+    0,
+    178,
+    174,
+    61,
+    245,
+    45,
+    250
+   ]
+  },
+  {
+   "name": "PrimaryEventApproved",
+   "discriminator": [
+    79,
+    121,
+    218,
+    68,
+    169,
+    98,
+    215,
+    218
+   ]
+  },
+  {
+   "name": "PrimaryEventCancelled",
+   "discriminator": [
+    171,
+    59,
+    236,
+    251,
+    237,
+    76,
+    252,
+    137
+   ]
+  },
+  {
+   "name": "PrimaryEventReported",
+   "discriminator": [
+    215,
+    36,
+    53,
+    109,
+    88,
+    141,
+    198,
+    51
+   ]
+  },
+  {
+   "name": "PrimaryOrderPlaced",
+   "discriminator": [
+    13,
+    7,
+    65,
+    94,
+    180,
+    82,
+    27,
+    60
+   ]
+  },
+  {
+   "name": "PrimaryRefundClaimed",
+   "discriminator": [
+    95,
+    199,
+    93,
+    12,
+    1,
+    22,
+    202,
+    18
+   ]
+  },
+  {
+   "name": "ProfitsWithdrawn",
+   "discriminator": [
+    58,
+    255,
+    109,
+    1,
+    70,
+    222,
+    189,
+    85
+   ]
+  },
+  {
+   "name": "ResolutionDisputeSettled",
+   "discriminator": [
+    184,
+    161,
+    20,
+    177,
+    189,
+    60,
+    205,
+    154
+   ]
+  },
+  {
+   "name": "SecondaryOrderPlaced",
+   "discriminator": [
+    129,
+    227,
+    105,
+    220,
+    56,
+    214,
+    93,
+    179
+   ]
+  },
+  {
+   "name": "SecondaryPriceUpdated",
+   "discriminator": [
+    246,
+    130,
+    51,
+    33,
+    173,
+    207,
+    222,
+    28
+   ]
+  },
+  {
+   "name": "SelfTradePositionCorrected",
+   "discriminator": [
+    94,
+    6,
+    231,
+    28,
+    58,
+    155,
+    50,
+    220
+   ]
+  },
+  {
+   "name": "SharesMinted",
+   "discriminator": [
+    127,
+    139,
+    238,
+    41,
+    118,
+    47,
+    122,
+    39
+   ]
+  },
+  {
+   "name": "VaultAlreadySettled",
+   "discriminator": [
+    13,
+    201,
+    50,
+    233,
+    224,
+    26,
+    119,
+    23
+   ]
+  },
+  {
+   "name": "WalletRemovedFromWhitelist",
+   "discriminator": [
+    85,
+    128,
+    33,
+    70,
+    226,
+    13,
+    214,
+    24
+   ]
+  },
+  {
+   "name": "WalletWhitelisted",
+   "discriminator": [
+    107,
+    131,
+    66,
+    173,
+    246,
+    146,
+    200,
+    150
+   ]
+  },
+  {
+   "name": "WhitelistedCreatorCreatedMarket",
+   "discriminator": [
+    182,
+    203,
+    131,
+    12,
+    6,
+    177,
+    3,
+    233
+   ]
+  },
+  {
+   "name": "WinningsClaimed",
+   "discriminator": [
+    187,
+    184,
+    29,
+    196,
+    54,
+    117,
+    70,
+    150
+   ]
+  }
+ ],
+ "errors": [
+  {
+   "code": 6000,
+   "name": "AdminEmpty",
+   "msg": "Must provide at least one admin"
+  },
+  {
+   "code": 6001,
+   "name": "InvalidRelayer",
+   "msg": "Must provide a valid relayer"
+  },
+  {
+   "code": 6002,
+   "name": "InvalidCreationFee",
+   "msg": "Creation fee must be greater than zero"
+  },
+  {
+   "code": 6003,
+   "name": "InvalidFeeBps",
+   "msg": "Fee basis points must be greater than zero"
+  },
+  {
+   "code": 6004,
+   "name": "InvalidGraduationThreshold",
+   "msg": "Graduation threshold must be greater than zero"
+  },
+  {
+   "code": 6005,
+   "name": "InvalidPriceTickSize",
+   "msg": "Price tick size must be greater than zero"
+  },
+  {
+   "code": 6006,
+   "name": "InvalidMaxTraversePerTx",
+   "msg": "Max traverse per transaction must be between 1 and 100"
+  },
+  {
+   "code": 6007,
+   "name": "SeedTooBig",
+   "msg": "Initial seed must be less than graduation threshold"
+  },
+  {
+   "code": 6008,
+   "name": "StartTimeTooSoon",
+   "msg": "Start time must be at least minimum_start_delay in the future"
+  },
+  {
+   "code": 6009,
+   "name": "InvalidTimeRange",
+   "msg": "End time must be after start time"
+  },
+  {
+   "code": 6010,
+   "name": "HashingError",
+   "msg": "Hashing error occurred"
+  },
+  {
+   "code": 6011,
+   "name": "InvalidResolutionTime",
+   "msg": "Resolution time must be at or after end time"
+  },
+  {
+   "code": 6012,
+   "name": "QuestionTooLong",
+   "msg": "Question exceeds 280 character limit"
+  },
+  {
+   "code": 6013,
+   "name": "QuestionTooShort",
+   "msg": "Question must be more than 3 characters"
+  },
+  {
+   "code": 6014,
+   "name": "EventHasNotStarted",
+   "msg": "Event has not started yet"
+  },
+  {
+   "code": 6015,
+   "name": "EventHasEnded",
+   "msg": "Event has already ended"
+  },
+  {
+   "code": 6016,
+   "name": "MarketGraduated",
+   "msg": "Market has already graduated to secondary trading"
+  },
+  {
+   "code": 6017,
+   "name": "MarketNotActive",
+   "msg": "Market is not in active state"
+  },
+  {
+   "code": 6018,
+   "name": "MarketNotSecondary",
+   "msg": "Market is not in secondary trading phase"
+  },
+  {
+   "code": 6019,
+   "name": "InvalidPrice",
+   "msg": "Price must be greater than zero"
+  },
+  {
+   "code": 6020,
+   "name": "InvalidPriceLevel",
+   "msg": "Provided price level must match program derived price level"
+  },
+  {
+   "code": 6021,
+   "name": "AccountDidNotDeserialize",
+   "msg": "Account did not deserialize"
+  },
+  {
+   "code": 6022,
+   "name": "AccountDidNotSerialize",
+   "msg": "Account did not serialize"
+  },
+  {
+   "code": 6023,
+   "name": "OrderTooSmall",
+   "msg": "Order size too small"
+  },
+  {
+   "code": 6024,
+   "name": "InsufficientShares",
+   "msg": "Insufficient shares for order"
+  },
+  {
+   "code": 6025,
+   "name": "Unauthorized",
+   "msg": "Unauthorized action"
+  },
+  {
+   "code": 6026,
+   "name": "TooEarlyToResolve",
+   "msg": "Too early to resolve event"
+  },
+  {
+   "code": 6027,
+   "name": "AlreadyResolved",
+   "msg": "Event already resolved"
+  },
+  {
+   "code": 6028,
+   "name": "NotResolved",
+   "msg": "Event not yet resolved"
+  },
+  {
+   "code": 6029,
+   "name": "NoWinningShares",
+   "msg": "No winning shares to claim"
+  },
+  {
+   "code": 6030,
+   "name": "NothingToClaim",
+   "msg": "Nothing to claim"
+  },
+  {
+   "code": 6031,
+   "name": "OrderbookTooDeep",
+   "msg": "Orderbook traversal depth exceeded"
+  },
+  {
+   "code": 6032,
+   "name": "MissingOrderNode",
+   "msg": "Order node not found in remaining accounts"
+  },
+  {
+   "code": 6033,
+   "name": "MissingMakerPosition",
+   "msg": "Maker position not found in remaining accounts"
+  },
+  {
+   "code": 6034,
+   "name": "OrderAlreadyFilled",
+   "msg": "Order already filled"
+  },
+  {
+   "code": 6035,
+   "name": "MathOverflow",
+   "msg": "Math Overflow"
+  },
+  {
+   "code": 6036,
+   "name": "InsufficientFunds",
+   "msg": "Insufficient Funds"
+  },
+  {
+   "code": 6037,
+   "name": "InsufficientVaultFunds",
+   "msg": "Insufficient Vault Funds"
+  },
+  {
+   "code": 6038,
+   "name": "InvalidTradeConfiguration",
+   "msg": "Invalid Trade Configuration"
+  },
+  {
+   "code": 6039,
+   "name": "InvalidAccount",
+   "msg": "Invalid Account"
+  },
+  {
+   "code": 6040,
+   "name": "InvalidShares",
+   "msg": "Invalid Shares"
+  },
+  {
+   "code": 6041,
+   "name": "MissingOrderNodeAccount",
+   "msg": "Missing OrderNode Account"
+  },
+  {
+   "code": 6042,
+   "name": "UnexpectedOrderNodeAccount",
+   "msg": "Unexpected OrderNode Account"
+  },
+  {
+   "code": 6043,
+   "name": "InvalidLinkedList",
+   "msg": "Invalid LinkedList"
+  },
+  {
+   "code": 6044,
+   "name": "InvalidOrder",
+   "msg": "Invalid Order"
+  },
+  {
+   "code": 6045,
+   "name": "MissingUserAccount",
+   "msg": "Missing User Account"
+  },
+  {
+   "code": 6046,
+   "name": "InvalidOrderType",
+   "msg": "Invalid Order Type"
+  },
+  {
+   "code": 6047,
+   "name": "InvalidOrderNode",
+   "msg": "Invalid Order Node"
+  },
+  {
+   "code": 6048,
+   "name": "InvalidTreasury",
+   "msg": "Invalid Treasury"
+  },
+  {
+   "code": 6049,
+   "name": "InvalidOrderId",
+   "msg": "Invalid Order ID"
+  },
+  {
+   "code": 6050,
+   "name": "InvalidCreator",
+   "msg": "Invalid Creator"
+  },
+  {
+   "code": 6051,
+   "name": "InvalidProgramData",
+   "msg": "Program data account is invalid for this program"
+  },
+  {
+   "code": 6052,
+   "name": "AdminQuorumNotMet",
+   "msg": "At least two distinct admin signers are required"
+  },
+  {
+   "code": 6053,
+   "name": "ClaimWindowNotReached",
+   "msg": "Winnings are not claimable yet"
+  },
+  {
+   "code": 6054,
+   "name": "ResolutionChallengeClosed",
+   "msg": "Resolution dispute window has already closed"
+  },
+  {
+   "code": 6055,
+   "name": "RefundNotAvailable",
+   "msg": "Primary refund is not available for this market"
+  },
+  {
+   "code": 6056,
+   "name": "NoRefundAvailable",
+   "msg": "No primary refund is available"
+  },
+  {
+   "code": 6057,
+   "name": "DustOrder",
+   "msg": "Order execution cost rounds to zero"
+  },
+  {
+   "code": 6058,
+   "name": "TradeSizeLimitExceeded",
+   "msg": "Order size exceeds 5 SOL before Rule #5 unlock conditions are met"
+  },
+  {
+   "code": 6059,
+   "name": "InvalidCancelReason",
+   "msg": "Invalid cancel reason for this action"
+  },
+  {
+   "code": 6060,
+   "name": "InvalidSweepTarget",
+   "msg": "Donation sweep target is invalid"
+  },
+  {
+   "code": 6061,
+   "name": "NothingToSweep",
+   "msg": "No sweepable donations were found"
+  },
+  {
+   "code": 6062,
+   "name": "InvalidOrderOwner",
+   "msg": "This filled order can be reaped only by its owner"
+  },
+  {
+   "code": 6063,
+   "name": "MarketNotGraduated",
+   "msg": "Market has not graduated yet - creator fees cannot be claimed"
+  },
+  {
+   "code": 6064,
+   "name": "NoFeesToClaim",
+   "msg": "No fees accumulated to claim"
+  },
+  {
+   "code": 6065,
+   "name": "NoFeesToBurn",
+   "msg": "No fees accumulated to burn"
+  },
+  {
+   "code": 6066,
+   "name": "MarketAlreadyGraduated",
+   "msg": "Market has already graduated - fees cannot be burned"
+  },
+  {
+   "code": 6067,
+   "name": "MarketStillActive",
+   "msg": "Market is still active - cannot burn fees yet"
+  },
+  {
+   "code": 6068,
+   "name": "ReviewAlreadyPending",
+   "msg": "An admin review is already in progress for this event"
+  },
+  {
+   "code": 6069,
+   "name": "NoPendingReview",
+   "msg": "No admin review is pending for this event"
+  },
+  {
+   "code": 6070,
+   "name": "InvalidReviewType",
+   "msg": "Pending review type does not match this action"
+  },
+  {
+   "code": 6071,
+   "name": "MarketCancelled",
+   "msg": "This market has been cancelled"
+  },
+  {
+   "code": 6072,
+   "name": "ReviewInProgress",
+   "msg": "This action is blocked while an admin review is in progress"
+  },
+  {
+   "code": 6073,
+   "name": "OutcomeUnchanged",
+   "msg": "A dispute must propose the opposite outcome"
+  },
+  {
+   "code": 6074,
+   "name": "EmptyReviewPool",
+   "msg": "The review pool must hold funds before opening a bond-backed review"
+  },
+  {
+   "code": 6075,
+   "name": "SeedTooSmall",
+   "msg": "Seed liquidity must be at least 0.5 SOL (500_000_000 lamports)"
+  },
+  {
+   "code": 6076,
+   "name": "SeedAboveMax",
+   "msg": "Seed liquidity must not exceed 0.9 SOL (900_000_000 lamports)"
+  },
+  {
+   "code": 6077,
+   "name": "SeedInvalidIncrement",
+   "msg": "Seed liquidity must be a multiple of 0.1 SOL (100_000_000 lamports)"
+  },
+  {
+   "code": 6078,
+   "name": "GraduationConditionsNotMet",
+   "msg": "Graduation conditions not met: share pool is not two-sided or exceeds the 3x imbalance bound"
+  },
+  {
+   "code": 6079,
+   "name": "GraduationThresholdNotReached",
+   "msg": "Graduation threshold not reached: vault liquidity is below the minimum floor"
+  },
+  {
+   "code": 6080,
+   "name": "PrimaryPhaseNotEnded",
+   "msg": "Primary phase has not ended yet - graduation can only occur at the end of the primary phase"
+  },
+  {
+   "code": 6081,
+   "name": "BreakingResolutionTooFar",
+   "msg": "Breaking Market resolution must be within 24 hours of creation"
+  },
+  {
+   "code": 6082,
+   "name": "BreakingEventEndRequired",
+   "msg": "Breaking Market requires an expected event end time"
+  },
+  {
+   "code": 6083,
+   "name": "BreakingAcquisitionTooShort",
+   "msg": "Remaining event duration too short for minimum 3-minute acquisition window"
+  },
+  {
+   "code": 6084,
+   "name": "BreakingEventTooFarFuture",
+   "msg": "Breaking Market event start must be within 6 hours"
+  },
+  {
+   "code": 6085,
+   "name": "FlashAcquisitionEnded",
+   "msg": "Flash Acquisition phase has ended - no more primary orders"
+  },
+  {
+   "code": 6086,
+   "name": "NotBreakingMarket",
+   "msg": "Market is not a Breaking Market"
+  },
+  {
+   "code": 6087,
+   "name": "NotStandardMarket",
+   "msg": "Market is not a Standard Market - use graduate_breaking_event for Breaking Markets"
+  },
+  {
+   "code": 6088,
+   "name": "FlashAcquisitionNotEnded",
+   "msg": "Breaking Market has not finished Flash Acquisition yet"
+  },
+  {
+   "code": 6089,
+   "name": "BreakingMarketOneSided",
+   "msg": "Breaking Market pool is one-sided and cannot graduate; call settle_failed_market to finalise"
+  },
+  {
+   "code": 6090,
+   "name": "CreatorNotWhitelisted",
+   "msg": "Market creation is restricted; this wallet is not whitelisted"
+  },
+  {
+   "code": 6091,
+   "name": "WalletAlreadyWhitelisted",
+   "msg": "Wallet is already present in the whitelist"
+  },
+  {
+   "code": 6092,
+   "name": "WalletNotWhitelisted",
+   "msg": "Wallet is not present in the whitelist"
+  },
+  {
+   "code": 6093,
+   "name": "WhitelistFull",
+   "msg": "Whitelist is at maximum capacity (500 entries)"
+  },
+  {
+   "code": 6094,
+   "name": "MarketAtPriceBoundary",
+   "msg": "Market reserve is at minimum - price boundary has been reached and cannot be filled further"
+  },
+  {
+   "code": 6095,
+   "name": "OracleResultNotSubmitted",
+   "msg": "Oracle has not submitted the initial result for this event yet"
+  },
+  {
+   "code": 6096,
+   "name": "NoSharesInMarket",
+   "msg": "You must hold shares in this market to file a dispute"
+  },
+  {
+   "code": 6097,
+   "name": "OracleResultAlreadySubmitted",
+   "msg": "Oracle result has already been submitted for this event"
+  },
+  {
+   "code": 6098,
+   "name": "InvalidInsuranceAuthority",
+   "msg": "Signer is not the insurance vault authority"
+  },
+  {
+   "code": 6099,
+   "name": "InsuranceVaultInsufficientFunds",
+   "msg": "Insurance vault has insufficient spendable balance for this claim"
+  },
+  {
+   "code": 6100,
+   "name": "LockedWinningSharesToClaim",
+   "msg": "You have winning shares locked in resting sell orders - cancel those orders first, then claim your winnings"
+  },
+  {
+   "code": 6101,
+   "name": "ForceClaimMarketNotResolved",
+   "msg": "Force-cancellation is only available after the market has been resolved"
+  },
+  {
+   "code": 6102,
+   "name": "SelfTrade",
+   "msg": "Self-trade not allowed: taker and maker are the same account"
+  }
+ ],
+ "types": [
+  {
+   "name": "BreakingEventCreated",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "question",
+      "type": "string"
+     },
+     {
+      "name": "market_type",
+      "type": {
+       "defined": {
+        "name": "MarketType"
+       }
+      }
+     },
+     {
+      "name": "flash_acquisition_end",
+      "type": "i64"
+     },
+     {
+      "name": "event_in_progress",
+      "type": "bool"
+     },
+     {
+      "name": "initial_yes_price",
+      "type": "u128"
+     },
+     {
+      "name": "seeded_yes",
+      "type": "bool"
+     }
+    ]
+   }
+  },
+  {
+   "name": "BreakingMarketGraduated",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "total_liquidity",
+      "type": "u128"
+     }
+    ]
+   }
+  },
+  {
+   "name": "CanCreateMarketResult",
+   "docs": [
+    "Result returned by the `can_create_market` view instruction."
+   ],
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "can_create",
+      "docs": [
+       "True if the wallet may currently create a market."
+      ],
+      "type": "bool"
+     },
+     {
+      "name": "is_whitelisted",
+      "docs": [
+       "True if the wallet appears in the creator whitelist."
+      ],
+      "type": "bool"
+     }
+    ]
+   }
+  },
+  {
+   "name": "CancelReason",
+   "type": {
+    "kind": "enum",
+    "variants": [
+     {
+      "name": "None"
+     },
+     {
+      "name": "FailedToGraduate"
+     },
+     {
+      "name": "Fraudulent"
+     }
+    ]
+   }
+  },
+  {
+   "name": "CreatorFeeVault",
+   "docs": [
+    "CREATOR_FEE_VAULT: Holds creator fees from primary market until graduation.",
+    "",
+    "- If market graduates → Creator can claim these fees",
+    "- If market doesn't graduate → Fees are swept to treasury when the failed",
+    "market is settled"
+   ],
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "creator",
+      "type": "pubkey"
+     },
+     {
+      "name": "accumulated_fees",
+      "type": "u128"
+     },
+     {
+      "name": "bump",
+      "type": "u8"
+     }
+    ]
+   }
+  },
+  {
+   "name": "CreatorFeesClaimed",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "creator",
+      "type": "pubkey"
+     },
+     {
+      "name": "amount",
+      "type": "u128"
+     }
+    ]
+   }
+  },
+  {
+   "name": "CreatorWhitelist",
+   "docs": [
+    "CREATOR_WHITELIST: Fee-tier registry for privileged creators.",
+    "",
+    "Wallets in `wallets` earn a higher creator fee split (50% vs 20%)",
+    "on all markets they create. Anyone may create markets - this list",
+    "controls fee tier only, not access.",
+    "",
+    "# Authority",
+    "The `authority` field is set at initialization time (must be a MarketConfig",
+    "admin). All subsequent add / remove operations require a signature",
+    "from `authority`."
+   ],
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "authority",
+      "docs": [
+       "Single admin key that controls this whitelist."
+      ],
+      "type": "pubkey"
+     },
+     {
+      "name": "wallets",
+      "docs": [
+       "Wallets that earn the elevated 50% creator fee split."
+      ],
+      "type": {
+       "vec": "pubkey"
+      }
+     },
+     {
+      "name": "bump",
+      "type": "u8"
+     }
+    ]
+   }
+  },
+  {
+   "name": "DonationSweepTarget",
+   "docs": [
+    "Identifies which protocol account's surplus lamports should be swept."
+   ],
+   "type": {
+    "kind": "enum",
+    "variants": [
+     {
+      "name": "InsuranceVault"
+     }
+    ]
+   }
+  },
+  {
+   "name": "DonationsSwept",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "target",
+      "type": "pubkey"
+     },
+     {
+      "name": "amount",
+      "type": "u64"
+     },
+     {
+      "name": "swept_to",
+      "type": "pubkey"
+     }
+    ]
+   }
+  },
+  {
+   "name": "Event",
+   "docs": [
+    "EVENT: The core market state.",
+    "",
+    "LIFECYCLE:",
+    "1. Created via create_event (seed: 0.5–0.9 SOL; 1 SOL creation fee)",
+    "2. Primary reserve-driven trading phase",
+    "- Standard markets: before `start_time`",
+    "- Breaking markets: before `flash_acquisition_end`",
+    "3. Graduation",
+    "- Standard markets: when the vault reaches the configured liquidity",
+    "threshold and the market has at least 1 YES share and 1 NO share",
+    "outstanding",
+    "- Breaking markets: when `flash_acquisition_end` is reached",
+    "4. Secondary CLOB trading phase",
+    "5. Resolved by oracle after resolution_time"
+   ],
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "creator",
+      "type": "pubkey"
+     },
+     {
+      "name": "start_time",
+      "type": "i64"
+     },
+     {
+      "name": "end_time",
+      "type": "i64"
+     },
+     {
+      "name": "resolution_time",
+      "type": "i64"
+     },
+     {
+      "name": "created_at",
+      "type": "i64"
+     },
+     {
+      "name": "resolved_at",
+      "type": "i64"
+     },
+     {
+      "name": "cancelled_at",
+      "type": "i64"
+     },
+     {
+      "name": "total_yes_shares",
+      "type": "u128"
+     },
+     {
+      "name": "total_no_shares",
+      "type": "u128"
+     },
+     {
+      "name": "virtual_sol_reserves",
+      "type": "u128"
+     },
+     {
+      "name": "virtual_yes_shares",
+      "type": "u128"
+     },
+     {
+      "name": "last_yes_price",
+      "type": "u128"
+     },
+     {
+      "name": "total_volume",
+      "type": "u128"
+     },
+     {
+      "name": "total_yes_volume",
+      "type": "u128"
+     },
+     {
+      "name": "total_no_volume",
+      "type": "u128"
+     },
+     {
+      "name": "total_trades",
+      "type": "u64"
+     },
+     {
+      "name": "total_revenue",
+      "type": "u128"
+     },
+     {
+      "name": "total_creator_fees",
+      "type": "u128"
+     },
+     {
+      "name": "total_protocol_fees",
+      "type": "u128"
+     },
+     {
+      "name": "primary_pool_lamports",
+      "type": "u128"
+     },
+     {
+      "name": "graduation_threshold",
+      "type": "u128"
+     },
+     {
+      "name": "claimable_at",
+      "type": "i64"
+     },
+     {
+      "name": "creator_seed_lamports",
+      "type": "u128"
+     },
+     {
+      "name": "question",
+      "type": "string"
+     },
+     {
+      "name": "resolution_rule",
+      "type": "string"
+     },
+     {
+      "name": "source_of_truth",
+      "type": {
+       "vec": "string"
+      }
+     },
+     {
+      "name": "active_volume",
+      "docs": [
+       "Trading volume excluding the creator's seed deposit.",
+       "Counts actual trades only (primary fills + secondary matched fills).",
+       "Positioned after dynamic fields so old accounts fail with EOF, not OOM."
+      ],
+      "type": "u128"
+     },
+     {
+      "name": "bump",
+      "type": "u8"
+     },
+     {
+      "name": "vault_bump",
+      "type": "u8"
+     },
+     {
+      "name": "creator_fee_vault_bump",
+      "type": "u8"
+     },
+     {
+      "name": "is_active",
+      "type": "bool"
+     },
+     {
+      "name": "is_graduated",
+      "type": "bool"
+     },
+     {
+      "name": "is_resolved",
+      "type": "bool"
+     },
+     {
+      "name": "is_cancelled",
+      "type": "bool"
+     },
+     {
+      "name": "yes_wins",
+      "type": "bool"
+     },
+     {
+      "name": "is_whitelisted_creator",
+      "docs": [
+       "True when the creator was whitelisted at market creation time.",
+       "Whitelisted creators earn 50% of fees; regular creators earn 20%."
+      ],
+      "type": "bool"
+     },
+     {
+      "name": "pending_review",
+      "type": {
+       "defined": {
+        "name": "ReviewKind"
+       }
+      }
+     },
+     {
+      "name": "cancel_reason",
+      "type": {
+       "defined": {
+        "name": "CancelReason"
+       }
+      }
+     },
+     {
+      "name": "market_type",
+      "type": {
+       "defined": {
+        "name": "MarketType"
+       }
+      }
+     },
+     {
+      "name": "flash_acquisition_end",
+      "docs": [
+       "Computed deadline for Flash Acquisition phase (unix timestamp).",
+       "For Standard markets this equals start_time (no behavioral difference)."
+      ],
+      "type": "i64"
+     },
+     {
+      "name": "event_in_progress",
+      "docs": [
+       "Whether the real-world event was already in progress at creation."
+      ],
+      "type": "bool"
+     },
+     {
+      "name": "primary_phase_end_time",
+      "docs": [
+       "Precomputed primary phase end timestamp (unix timestamp).",
+       "Standard markets: created_at + compute_primary_duration(time_to_event).",
+       "Breaking markets: always flash_acquisition_end (primary_phase_end() ignores this)."
+      ],
+      "type": "i64"
+     },
+     {
+      "name": "review_expires_at",
+      "docs": [
+       "Unix timestamp when the currently pending review expires.",
+       "Set by report_primary_event / dispute_resolved_event; cleared to 0 by expire_review",
+       "or settle_resolution_dispute. 0 means no active review (or no expiry recorded)."
+      ],
+      "type": "i64"
+     },
+     {
+      "name": "oracle_proposed_yes_wins",
+      "docs": [
+       "The oracle's initial proposed answer, populated by submit_oracle_result.",
+       "Used during admin resolve to determine bond outcome when a dispute is active."
+      ],
+      "type": "bool"
+     },
+     {
+      "name": "oracle_result_submitted",
+      "docs": [
+       "True once submit_oracle_result has been called.  Guards dispute and resolve."
+      ],
+      "type": "bool"
+     },
+     {
+      "name": "last_secondary_yes_price",
+      "docs": [
+       "Price (on the `PRICE_SCALE` fixed-point scale) of the most recently",
+       "matched secondary-market trade on the YES side. 0 until a YES trade fills."
+      ],
+      "type": "u128"
+     },
+     {
+      "name": "last_secondary_no_price",
+      "docs": [
+       "Price (on the `PRICE_SCALE` fixed-point scale) of the most recently",
+       "matched secondary-market trade on the NO side. 0 until a NO trade fills."
+      ],
+      "type": "u128"
+     }
+    ]
+   }
+  },
+  {
+   "name": "EventCreated",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "question",
+      "type": "string"
+     },
+     {
+      "name": "initial_yes_price",
+      "type": "u128"
+     },
+     {
+      "name": "seeded_yes",
+      "type": "bool"
+     }
+    ]
+   }
+  },
+  {
+   "name": "EventResolved",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "yes_wins",
+      "type": "bool"
+     },
+     {
+      "name": "timestamp",
+      "type": "i64"
+     }
+    ]
+   }
+  },
+  {
+   "name": "FailedMarketSettled",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "settled_by",
+      "type": "pubkey"
+     },
+     {
+      "name": "settled_pool_lamports",
+      "docs": [
+       "Lamports moved from the market vault to the insurance fund (formerly burned)."
+      ],
+      "type": "u64"
+     },
+     {
+      "name": "swept_creator_fees",
+      "type": "u64"
+     }
+    ]
+   }
+  },
+  {
+   "name": "FilledOrderReaped",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "owner",
+      "type": "pubkey"
+     },
+     {
+      "name": "order_id",
+      "type": "u64"
+     }
+    ]
+   }
+  },
+  {
+   "name": "GetEventPoolTotalResult",
+   "docs": [
+    "Result returned by the `get_event_pool_total` view instruction."
+   ],
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "vault_lamports",
+      "docs": [
+       "Tracked lamport balance in the vault PDA."
+      ],
+      "type": "u128"
+     },
+     {
+      "name": "primary_pool_lamports",
+      "docs": [
+       "Lamport snapshot taken at graduation/settlement (non-zero after primary phase ends)."
+      ],
+      "type": "u128"
+     },
+     {
+      "name": "is_graduated",
+      "docs": [
+       "Whether the market has graduated to secondary trading."
+      ],
+      "type": "bool"
+     },
+     {
+      "name": "is_cancelled",
+      "docs": [
+       "Whether the market has been cancelled / failed."
+      ],
+      "type": "bool"
+     }
+    ]
+   }
+  },
+  {
+   "name": "GraduationFailReason",
+   "docs": [
+    "Specific reason a market failed to graduate.",
+    "Emitted inside `MarketGraduationFailed` so callers can surface the exact",
+    "cause without parsing log strings."
+   ],
+   "type": {
+    "kind": "enum",
+    "variants": [
+     {
+      "name": "ThresholdNotReached"
+     },
+     {
+      "name": "OneSidedPool"
+     },
+     {
+      "name": "ShareImbalance"
+     }
+    ]
+   }
+  },
+  {
+   "name": "InsuranceFundClaimed",
+   "docs": [
+    "Emitted each time the Squads authority claims lamports from the insurance fund."
+   ],
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "claimed_by",
+      "docs": [
+       "The Squads vault PDA that authorised the claim."
+      ],
+      "type": "pubkey"
+     },
+     {
+      "name": "recipient",
+      "docs": [
+       "Destination wallet or account that received the lamports."
+      ],
+      "type": "pubkey"
+     },
+     {
+      "name": "lamports",
+      "type": "u64"
+     },
+     {
+      "name": "insurance_vault_remaining",
+      "docs": [
+       "Remaining claimable balance in the insurance vault after this withdrawal."
+      ],
+      "type": "u64"
+     }
+    ]
+   }
+  },
+  {
+   "name": "InsuranceFundDeposit",
+   "docs": [
+    "Emitted each time a failed market's vault is redirected to the insurance fund."
+   ],
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "docs": [
+       "The failed market event account."
+      ],
+      "type": "pubkey"
+     },
+     {
+      "name": "lamports",
+      "docs": [
+       "Lamports deposited from the market vault."
+      ],
+      "type": "u64"
+     },
+     {
+      "name": "insurance_vault_total",
+      "docs": [
+       "Running total accumulated in the insurance vault after this deposit."
+      ],
+      "type": "u128"
+     }
+    ]
+   }
+  },
+  {
+   "name": "InsuranceVault",
+   "docs": [
+    "INSURANCE_VAULT: Global singleton PDA that accumulates SOL from failed markets.",
+    "",
+    "When a primary market fails to graduate its vault liquidity is redirected here",
+    "rather than burned to the incinerator. The `authority` is a Squads multisig",
+    "vault PDA; claims require that multisig's threshold to be met externally before",
+    "the vault PDA can sign.",
+    "",
+    "Seeds: `[b\"insurance_vault\"]`"
+   ],
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "authority",
+      "docs": [
+       "Squads vault PDA (or any authority pubkey) that may call claim_insurance_vault."
+      ],
+      "type": "pubkey"
+     },
+     {
+      "name": "total_accumulated",
+      "docs": [
+       "Cumulative lamports deposited across all failed markets (audit counter)."
+      ],
+      "type": "u128"
+     },
+     {
+      "name": "total_claimed",
+      "docs": [
+       "Cumulative lamports claimed out (audit counter)."
+      ],
+      "type": "u128"
+     },
+     {
+      "name": "bump",
+      "type": "u8"
+     }
+    ]
+   }
+  },
+  {
+   "name": "MarketConfig",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "admin",
+      "type": {
+       "array": [
+        "pubkey",
+        3
+       ]
+      }
+     },
+     {
+      "name": "relayer",
+      "type": "pubkey"
+     },
+     {
+      "name": "treasury",
+      "type": "pubkey"
+     },
+     {
+      "name": "creation_fee",
+      "type": "u64"
+     },
+     {
+      "name": "minimum_start_delay",
+      "type": "i64"
+     },
+     {
+      "name": "primary_fee_bps",
+      "type": "u64"
+     },
+     {
+      "name": "secondary_fee_bps",
+      "type": "u64"
+     },
+     {
+      "name": "graduation_threshold",
+      "type": "u128"
+     },
+     {
+      "name": "price_tick_size",
+      "type": "u64"
+     },
+     {
+      "name": "max_traverse_per_tx",
+      "type": "u32"
+     },
+     {
+      "name": "neutral_liquidity",
+      "type": "u128"
+     }
+    ]
+   }
+  },
+  {
+   "name": "MarketConfigUpdated",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "updated_by",
+      "type": "pubkey"
+     }
+    ]
+   }
+  },
+  {
+   "name": "MarketDisputed",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "disputer",
+      "type": "pubkey"
+     },
+     {
+      "name": "oracle_proposed_yes_wins",
+      "type": "bool"
+     },
+     {
+      "name": "disputer_proposed_yes_wins",
+      "type": "bool"
+     },
+     {
+      "name": "bond_lamports",
+      "type": "u64"
+     }
+    ]
+   }
+  },
+  {
+   "name": "MarketGraduated",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "total_liquidity",
+      "type": "u128"
+     }
+    ]
+   }
+  },
+  {
+   "name": "MarketGraduationFailed",
+   "docs": [
+    "Emitted whenever a market is burned instead of graduated.",
+    "Provides the exact reason graduation was not possible, the final vault",
+    "balance, and share counts so frontends and indexers can surface a",
+    "meaningful failure message without parsing log strings."
+   ],
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "market_type",
+      "type": {
+       "defined": {
+        "name": "MarketType"
+       }
+      }
+     },
+     {
+      "name": "reason",
+      "type": {
+       "defined": {
+        "name": "GraduationFailReason"
+       }
+      }
+     },
+     {
+      "name": "vault_lamports",
+      "docs": [
+       "Vault balance at the moment the failure was detected (before burning)."
+      ],
+      "type": "u128"
+     },
+     {
+      "name": "graduation_threshold",
+      "docs": [
+       "The configured graduation threshold for reference."
+      ],
+      "type": "u128"
+     },
+     {
+      "name": "total_yes_shares",
+      "type": "u128"
+     },
+     {
+      "name": "total_no_shares",
+      "type": "u128"
+     }
+    ]
+   }
+  },
+  {
+   "name": "MarketInitialized",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "minimum_start_delay",
+      "type": "i64"
+     },
+     {
+      "name": "primary_fee_bps",
+      "type": "u64"
+     },
+     {
+      "name": "secondary_fee_bps",
+      "type": "u64"
+     },
+     {
+      "name": "graduation_threshold",
+      "type": "u128"
+     },
+     {
+      "name": "price_tick_size",
+      "type": "u64"
+     }
+    ]
+   }
+  },
+  {
+   "name": "MarketType",
+   "type": {
+    "kind": "enum",
+    "variants": [
+     {
+      "name": "Standard"
+     },
+     {
+      "name": "Breaking"
+     }
+    ]
+   }
+  },
+  {
+   "name": "OracleResultSubmitted",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "oracle",
+      "type": "pubkey"
+     },
+     {
+      "name": "proposed_yes_wins",
+      "type": "bool"
+     }
+    ]
+   }
+  },
+  {
+   "name": "OrderCancelled",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "user",
+      "type": "pubkey"
+     },
+     {
+      "name": "side",
+      "type": {
+       "defined": {
+        "name": "OrderSide"
+       }
+      }
+     },
+     {
+      "name": "price",
+      "type": "u64"
+     },
+     {
+      "name": "amount",
+      "type": "u64"
+     },
+     {
+      "name": "order_id",
+      "type": "u64"
+     }
+    ]
+   }
+  },
+  {
+   "name": "OrderForceCancelled",
+   "docs": [
+    "Emitted by `force_cancel_order` when a permissionless cranker unwinds a",
+    "resting order on a resolved market on behalf of an inactive/unreachable owner.",
+    "",
+    "Distinguishable from the voluntary `OrderCancelled` event so indexers can",
+    "track which cancellations were user-initiated vs protocol-enforced."
+   ],
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "order_owner",
+      "docs": [
+       "Original order owner (receives locked SOL / shares back)."
+      ],
+      "type": "pubkey"
+     },
+     {
+      "name": "cranker",
+      "docs": [
+       "Cranker who triggered the force-cancel (receives OrderNode rent)."
+      ],
+      "type": "pubkey"
+     },
+     {
+      "name": "side",
+      "type": {
+       "defined": {
+        "name": "OrderSide"
+       }
+      }
+     },
+     {
+      "name": "price",
+      "type": "u64"
+     },
+     {
+      "name": "amount",
+      "docs": [
+       "Remaining unfilled shares at the time of cancellation."
+      ],
+      "type": "u64"
+     },
+     {
+      "name": "order_id",
+      "type": "u64"
+     },
+     {
+      "name": "returned_lamports",
+      "docs": [
+       "Locked SOL returned to owner (non-zero for bid orders only)."
+      ],
+      "type": "u128"
+     },
+     {
+      "name": "returned_yes_shares",
+      "docs": [
+       "Locked YES shares returned to owner's position (non-zero for YES ask orders)."
+      ],
+      "type": "u128"
+     },
+     {
+      "name": "returned_no_shares",
+      "docs": [
+       "Locked NO shares returned to owner's position (non-zero for NO ask orders)."
+      ],
+      "type": "u128"
+     }
+    ]
+   }
+  },
+  {
+   "name": "OrderIntent",
+   "type": {
+    "kind": "enum",
+    "variants": [
+     {
+      "name": "Buy"
+     },
+     {
+      "name": "Sell"
+     }
+    ]
+   }
+  },
+  {
+   "name": "OrderMatched",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "buyer",
+      "type": "pubkey"
+     },
+     {
+      "name": "seller",
+      "type": "pubkey"
+     },
+     {
+      "name": "side",
+      "type": {
+       "defined": {
+        "name": "OrderSide"
+       }
+      }
+     },
+     {
+      "name": "price",
+      "type": "u64"
+     },
+     {
+      "name": "amount",
+      "type": "u64"
+     }
+    ]
+   }
+  },
+  {
+   "name": "OrderNode",
+   "docs": [
+    "FIX [M-02]: Added `is_initialized` flag."
+   ],
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "is_initialized",
+      "docs": [
+       "True after first initialization."
+      ],
+      "type": "bool"
+     },
+     {
+      "name": "owner",
+      "type": "pubkey"
+     },
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "price_level",
+      "type": "pubkey"
+     },
+     {
+      "name": "amount",
+      "type": "u64"
+     },
+     {
+      "name": "original_amount",
+      "type": "u64"
+     },
+     {
+      "name": "timestamp",
+      "type": "i64"
+     },
+     {
+      "name": "side",
+      "type": {
+       "defined": {
+        "name": "OrderSide"
+       }
+      }
+     },
+     {
+      "name": "order_type",
+      "type": {
+       "defined": {
+        "name": "OrderType"
+       }
+      }
+     },
+     {
+      "name": "order_intent",
+      "type": {
+       "defined": {
+        "name": "OrderIntent"
+       }
+      }
+     },
+     {
+      "name": "price_lamports",
+      "type": "u64"
+     },
+     {
+      "name": "bump",
+      "type": "u8"
+     },
+     {
+      "name": "order_id",
+      "type": "u64"
+     },
+     {
+      "name": "client_nonce",
+      "type": "u64"
+     },
+     {
+      "name": "prev_order",
+      "type": "pubkey"
+     },
+     {
+      "name": "next_order",
+      "type": "pubkey"
+     },
+     {
+      "name": "locked_lamports",
+      "type": "u128"
+     },
+     {
+      "name": "locked_yes_shares",
+      "type": "u128"
+     },
+     {
+      "name": "locked_no_shares",
+      "type": "u128"
+     }
+    ]
+   }
+  },
+  {
+   "name": "OrderSide",
+   "type": {
+    "kind": "enum",
+    "variants": [
+     {
+      "name": "Yes"
+     },
+     {
+      "name": "No"
+     }
+    ]
+   }
+  },
+  {
+   "name": "OrderType",
+   "type": {
+    "kind": "enum",
+    "variants": [
+     {
+      "name": "Bid"
+     },
+     {
+      "name": "Ask"
+     }
+    ]
+   }
+  },
+  {
+   "name": "PriceLevel",
+   "docs": [
+    "FIX [M-02]: Added `is_initialized` flag (same rationale as UserPosition)."
+   ],
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "is_initialized",
+      "docs": [
+       "True after first initialization."
+      ],
+      "type": "bool"
+     },
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "price_lamports",
+      "type": "u64"
+     },
+     {
+      "name": "bump",
+      "type": "u8"
+     },
+     {
+      "name": "total_bid_amount",
+      "type": "u64"
+     },
+     {
+      "name": "total_ask_amount",
+      "type": "u64"
+     },
+     {
+      "name": "bid_count",
+      "type": "u64"
+     },
+     {
+      "name": "ask_count",
+      "type": "u64"
+     },
+     {
+      "name": "next_order_id",
+      "type": "u64"
+     },
+     {
+      "name": "bid_head",
+      "type": "pubkey"
+     },
+     {
+      "name": "bid_tail",
+      "type": "pubkey"
+     },
+     {
+      "name": "ask_head",
+      "type": "pubkey"
+     },
+     {
+      "name": "ask_tail",
+      "type": "pubkey"
+     }
+    ]
+   }
+  },
+  {
+   "name": "PrimaryEventApproved",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "reporter",
+      "type": "pubkey"
+     },
+     {
+      "name": "approved_by",
+      "type": "pubkey"
+     },
+     {
+      "name": "bond_lamports",
+      "type": "u64"
+     }
+    ]
+   }
+  },
+  {
+   "name": "PrimaryEventCancelled",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "reporter",
+      "type": "pubkey"
+     },
+     {
+      "name": "cancelled_by",
+      "type": "pubkey"
+     },
+     {
+      "name": "bond_lamports",
+      "type": "u64"
+     },
+     {
+      "name": "refunded_pool_lamports",
+      "type": "u64"
+     },
+     {
+      "name": "burned_seed_lamports",
+      "type": "u64"
+     },
+     {
+      "name": "burned_creator_fees",
+      "type": "u64"
+     }
+    ]
+   }
+  },
+  {
+   "name": "PrimaryEventReported",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "reporter",
+      "type": "pubkey"
+     },
+     {
+      "name": "bond_lamports",
+      "type": "u64"
+     },
+     {
+      "name": "pool_lamports",
+      "type": "u64"
+     }
+    ]
+   }
+  },
+  {
+   "name": "PrimaryOrderPlaced",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "user",
+      "type": "pubkey"
+     },
+     {
+      "name": "side",
+      "type": {
+       "defined": {
+        "name": "OrderSide"
+       }
+      }
+     },
+     {
+      "name": "lamports",
+      "type": "u64"
+     }
+    ]
+   }
+  },
+  {
+   "name": "PrimaryRefundClaimed",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "user",
+      "type": "pubkey"
+     },
+     {
+      "name": "amount",
+      "type": "u128"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ProfitsWithdrawn",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "user",
+      "type": "pubkey"
+     },
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "amount",
+      "type": "u128"
+     },
+     {
+      "name": "claimed_by",
+      "type": "pubkey"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ResolutionDisputeSettled",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "disputer",
+      "type": "pubkey"
+     },
+     {
+      "name": "settled_by",
+      "type": "pubkey"
+     },
+     {
+      "name": "disputer_correct",
+      "type": "bool"
+     },
+     {
+      "name": "final_yes_wins",
+      "type": "bool"
+     },
+     {
+      "name": "bond_lamports",
+      "type": "u64"
+     },
+     {
+      "name": "reward_lamports",
+      "type": "u64"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ReviewKind",
+   "type": {
+    "kind": "enum",
+    "variants": [
+     {
+      "name": "None"
+     },
+     {
+      "name": "PrimaryInvalidity"
+     },
+     {
+      "name": "ResolutionDispute"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ReviewRequest",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "requester",
+      "type": "pubkey"
+     },
+     {
+      "name": "requested_at",
+      "type": "i64"
+     },
+     {
+      "name": "expires_at",
+      "type": "i64"
+     },
+     {
+      "name": "bond_lamports",
+      "type": "u64"
+     },
+     {
+      "name": "pool_lamports",
+      "type": "u64"
+     },
+     {
+      "name": "bump",
+      "type": "u8"
+     },
+     {
+      "name": "review_kind",
+      "type": {
+       "defined": {
+        "name": "ReviewKind"
+       }
+      }
+     },
+     {
+      "name": "proposed_yes_wins",
+      "type": "bool"
+     }
+    ]
+   }
+  },
+  {
+   "name": "SecondaryOrderPlaced",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "user",
+      "type": "pubkey"
+     },
+     {
+      "name": "side",
+      "type": {
+       "defined": {
+        "name": "OrderSide"
+       }
+      }
+     },
+     {
+      "name": "price",
+      "type": "u64"
+     },
+     {
+      "name": "amount",
+      "type": "u64"
+     },
+     {
+      "name": "filled",
+      "type": "u64"
+     },
+     {
+      "name": "order_id",
+      "type": "u64"
+     }
+    ]
+   }
+  },
+  {
+   "name": "SecondaryPriceUpdated",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "side",
+      "type": {
+       "defined": {
+        "name": "OrderSide"
+       }
+      }
+     },
+     {
+      "name": "price",
+      "type": "u64"
+     },
+     {
+      "name": "timestamp",
+      "type": "i64"
+     }
+    ]
+   }
+  },
+  {
+   "name": "SelfTradePositionCorrected",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "victim",
+      "docs": [
+       "The wallet whose position was corrected."
+      ],
+      "type": "pubkey"
+     },
+     {
+      "name": "corrected_by",
+      "docs": [
+       "Admin who signed the correction."
+      ],
+      "type": "pubkey"
+     },
+     {
+      "name": "lamports_credited",
+      "docs": [
+       "Lamports credited to `victim_position.lamports` (already in vault, just bookkeeping)."
+      ],
+      "type": "u128"
+     },
+     {
+      "name": "yes_shares_unlocked",
+      "docs": [
+       "YES shares removed from `victim_position.locked_yes_shares`."
+      ],
+      "type": "u128"
+     },
+     {
+      "name": "no_shares_unlocked",
+      "docs": [
+       "NO shares removed from `victim_position.locked_no_shares`."
+      ],
+      "type": "u128"
+     }
+    ]
+   }
+  },
+  {
+   "name": "SharesMinted",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "user",
+      "type": "pubkey"
+     },
+     {
+      "name": "yes_amount",
+      "type": "u128"
+     },
+     {
+      "name": "no_amount",
+      "type": "u128"
+     }
+    ]
+   }
+  },
+  {
+   "name": "UserPosition",
+   "docs": [
+    "FIX [M-02]: Added `is_initialized` flag to replace brittle Pubkey::default()",
+    "checks. Anchor's `init_if_needed` can lead to reinitialization vulnerabilities",
+    "when state is checked by comparing against a default Pubkey, because a legitimately",
+    "initialized account where the event field happens to be default would be re-init'd."
+   ],
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "is_initialized",
+      "docs": [
+       "True after first initialization; prevents accidental re-initialization."
+      ],
+      "type": "bool"
+     },
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "owner",
+      "type": "pubkey"
+     },
+     {
+      "name": "bump",
+      "type": "u8"
+     },
+     {
+      "name": "yes_shares",
+      "type": "u128"
+     },
+     {
+      "name": "no_shares",
+      "type": "u128"
+     },
+     {
+      "name": "lamports",
+      "type": "u128"
+     },
+     {
+      "name": "primary_contributed_lamports",
+      "type": "u128"
+     },
+     {
+      "name": "seed_contributed_lamports",
+      "type": "u128"
+     },
+     {
+      "name": "locked_lamports",
+      "type": "u128"
+     },
+     {
+      "name": "locked_yes_shares",
+      "type": "u128"
+     },
+     {
+      "name": "locked_no_shares",
+      "type": "u128"
+     }
+    ]
+   }
+  },
+  {
+   "name": "Vault",
+   "docs": [
+    "Vault holds escrowed SOL for a market.",
+    "",
+    "# Accounting convention (FIX [M-04])",
+    "",
+    "`vault.lamport` is the canonical tracked balance. All instructions that",
+    "move lamports into or out of this PDA must update `vault.lamport` in the",
+    "same transaction. Raw lamport manipulation (`try_borrow_mut_lamports`) is",
+    "used for the actual on-chain transfer; Anchor's `sub_lamports`/`add_lamports`",
+    "are used only where `vault.lamport` is NOT separately decremented, to avoid",
+    "double-decrement bugs (see C-04 fix in claim_lamports.rs)."
+   ],
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "lamport",
+      "type": "u128"
+     }
+    ]
+   }
+  },
+  {
+   "name": "VaultAlreadySettled",
+   "docs": [
+    "Emitted by `settle_failed_market` when called as a fallback but the inline",
+    "settlement inside `graduate_market` / `graduate_breaking_event` already ran.",
+    "Prevents the instruction from silently no-oping - callers and indexers",
+    "always get an explicit acknowledgment of what happened."
+   ],
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "caller",
+      "type": "pubkey"
+     },
+     {
+      "name": "original_settled_lamports",
+      "docs": [
+       "The `primary_pool_lamports` snapshot set during the original inline settlement,",
+       "confirming how much was redirected to the insurance fund."
+      ],
+      "type": "u128"
+     }
+    ]
+   }
+  },
+  {
+   "name": "WalletRemovedFromWhitelist",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "wallet",
+      "type": "pubkey"
+     },
+     {
+      "name": "removed_by",
+      "type": "pubkey"
+     }
+    ]
+   }
+  },
+  {
+   "name": "WalletWhitelisted",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "wallet",
+      "type": "pubkey"
+     },
+     {
+      "name": "whitelisted_by",
+      "type": "pubkey"
+     }
+    ]
+   }
+  },
+  {
+   "name": "WhitelistedCreatorCreatedMarket",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "creator",
+      "type": "pubkey"
+     }
+    ]
+   }
+  },
+  {
+   "name": "WinClaim",
+   "docs": [
+    "WinClaim records a user's successfully executed winning-share claim.",
+    "",
+    "Created atomically during `claim_win`. Its existence is the canonical",
+    "proof that the user has already claimed - Anchor's `init` constraint",
+    "rejects duplicate initialisation, so no separate flag is needed on",
+    "UserPosition.  Storing the share snapshot here lets the frontend display",
+    "\"had X YES shares, claimed Y lamports\" even after resolution."
+   ],
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "user",
+      "type": "pubkey"
+     },
+     {
+      "name": "yes_shares_at_claim",
+      "docs": [
+       "YES shares the user held at claim time (mirrors UserPosition.yes_shares)"
+      ],
+      "type": "u128"
+     },
+     {
+      "name": "no_shares_at_claim",
+      "docs": [
+       "NO shares the user held at claim time (mirrors UserPosition.no_shares)"
+      ],
+      "type": "u128"
+     },
+     {
+      "name": "payout",
+      "docs": [
+       "Lamports paid out to the user"
+      ],
+      "type": "u64"
+     },
+     {
+      "name": "claimed_at",
+      "docs": [
+       "Unix timestamp of the claim"
+      ],
+      "type": "i64"
+     },
+     {
+      "name": "bump",
+      "type": "u8"
+     }
+    ]
+   }
+  },
+  {
+   "name": "WinningsClaimed",
+   "type": {
+    "kind": "struct",
+    "fields": [
+     {
+      "name": "event",
+      "type": "pubkey"
+     },
+     {
+      "name": "user",
+      "type": "pubkey"
+     },
+     {
+      "name": "amount",
+      "type": "u64"
+     }
+    ]
+   }
+  }
+ ]
+}

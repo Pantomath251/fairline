@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fairline · Fair odds for Panta prediction markets</title>
+  <meta name="description" content="Bookmaker-grade fair odds, one-click market creation and trading for Panta prediction markets on Solana.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2340dca0'/><path d='M8 22 L14 14 L18 18 L24 9' stroke='%230b1220' stroke-width='3' fill='none' stroke-linecap='round'/></svg>">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" width="28" height="28"><rect width="32" height="32" rx="8" fill="var(--accent)"/><path d="M8 22 L14 14 L18 18 L24 9" stroke="#0b1220" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+    <span>Fairline</span>
+    <small>fair odds for prediction markets</small>
+  </div>
+  <div class="pills">
+    <span id="pill-panta" class="pill">Panta</span>
+    <span id="pill-solami" class="pill">Solana stream</span>
+    <button id="connect" class="btn primary">Connect Phantom</button>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button data-tab="setup">Setup</button>
+  <button data-tab="markets" class="active">Markets</button>
+  <button data-tab="create">Create from fixtures</button>
+  <button data-tab="portfolio">Portfolio</button>
+  <button data-tab="tape">Live on-chain</button>
+  <button data-tab="agents">Agent API</button>
+</nav>
+
+<main>
+  <section id="tab-setup" class="tab">
+    <div class="intro"><h1>Setup</h1><p>Two keys and a wallet. Keys are stored only in this computer’s <code>.env</code> file.</p></div>
+    <div class="setup">
+      <div class="panel">
+        <h3>1 · Panta API account <span id="s-panta" class="pill">not connected</span></h3>
+        <p class="muted">Creates your Panta developer account and an API key in one step (or logs in if the email already has one). Use a new password, at least 8 characters.</p>
+        <div class="form">
+          <input id="s-email" type="email" placeholder="Email" autocomplete="email">
+          <input id="s-pass" type="password" placeholder="New password (8+ characters)" autocomplete="new-password">
+          <button id="s-panta-go" class="btn primary">Create account &amp; key</button>
+        </div>
+        <p id="s-panta-out" class="muted"></p>
+      </div>
+      <div class="panel">
+        <h3>2 · Solami key <span id="s-solami" class="pill">not connected</span></h3>
+        <p class="muted">Open Solami, choose <b>Continue with GitHub</b>, then copy the API key from your dashboard and paste it here.</p>
+        <div class="form">
+          <a class="btn" href="https://solami.dev/signup?ref=st-earn-sep-26" target="_blank" rel="noopener">Open Solami sign-up</a>
+          <input id="s-solami-key" placeholder="Paste Solami API key">
+          <button id="s-solami-go" class="btn primary">Save</button>
+        </div>
+        <p id="s-solami-out" class="muted"></p>
+      </div>
+      <div class="panel">
+        <h3>3 · Wallet <span id="s-wallet" class="pill">not connected</span></h3>
+        <p class="muted">Connect Phantom to trade, create markets and see your portfolio.</p>
+        <button class="btn primary" onclick="connect()">Connect Phantom</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-markets" class="tab active">
+    <div class="intro">
+      <h1>Is this market priced right?</h1>
+      <p>Every Panta sports market is read, matched to the real fixture and priced against de-vigged bookmaker consensus.
+        Green means the market is cheaper than the fair probability.</p>
+    </div>
+    <div class="toolbar">
+      <input id="price-q" placeholder="Price any question, e.g. “Will Arsenal beat Chelsea by 2 or more goals?”">
+      <button id="price-go" class="btn">Price it</button>
+      <span id="price-out" class="muted"></span>
+    </div>
+    <div class="toolbar">
+      <select id="m-category"><option value="sports">Sports</option><option value="">All categories</option></select>
+      <label class="chk"><input type="checkbox" id="m-open" checked> open only</label>
+      <button id="m-refresh" class="btn ghost">Refresh</button>
+      <span id="m-meta" class="muted"></span>
+    </div>
+    <div id="markets" class="cards"></div>
+  </section>
+
+  <section id="tab-create" class="tab">
+    <div class="intro">
+      <h1>Turn tomorrow’s fixtures into markets</h1>
+      <p>Pick a match: Fairline writes the question, resolution rule, sources and times, renders the cover image, uploads it
+        and builds the Panta create transaction for your wallet to sign.</p>
+    </div>
+    <div class="toolbar">
+      <select id="f-sport"><option value="">All sports</option><option>football</option><option>basketball</option><option>tennis</option><option>ice-hockey</option></select>
+      <select id="f-order"><option value="top">Top competitions first</option><option value="time">Soonest first</option></select>
+      <input id="f-q" placeholder="Team or competition">
+      <span id="f-meta" class="muted"></span>
+    </div>
+    <div class="split">
+      <div id="fixtures" class="list"></div>
+      <div id="fixture-detail" class="panel sticky"><p class="muted">Select a fixture.</p></div>
+    </div>
+  </section>
+
+  <section id="tab-portfolio" class="tab">
+    <div class="intro"><h1>Portfolio</h1><p>Your Panta positions, marked to market, with one-click claims for winners.</p></div>
+    <div id="portfolio" class="panel"><p class="muted">Connect Phantom to load positions.</p></div>
+  </section>
+
+  <section id="tab-tape" class="tab">
+    <div class="intro">
+      <h1>Panta, live from Solana</h1>
+      <p>Program logs streamed in real time over Solami WebSocket RPC, Anchor events decoded in-house, USDC flows read from each transaction.</p>
+    </div>
+    <div id="tape-status" class="muted"></div>
+    <div id="tape" class="tape"></div>
+  </section>
+
+  <section id="tab-agents" class="tab">
+    <div class="intro">
+      <h1>An API for AI agents</h1>
+      <p>Agents ask “what is this market really worth?” and pay a fraction of a cent per answer over x402, no keys or signup.</p>
+    </div>
+    <div id="agents" class="panel"></div>
+  </section>
+</main>
+
+<div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <button class="close" id="modal-close" aria-label="Close">×</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+<div id="toast" class="toast hidden"></div>
+
+<footer>
+  <a href="https://panta.market" target="_blank" rel="noopener" class="powered">Powered by Panta</a>
+  <span class="muted">· fair odds from public bookmaker consensus (SofaScore) · on-chain stream by Solami · not financial advice</span>
+</footer>
+<script src="/static/app.js"></script>
+</body>
+</html>
