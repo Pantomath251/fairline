@@ -58,6 +58,68 @@ def test_matcher_question_shapes():
     assert matcher.match_market({"title": "Will it rain in London?", "startTime": 0}, fx) is None
 
 
+def test_matcher_refuses_or_fixes_known_traps():
+    fx = [fixture("Arsenal", "Chelsea", 1.8, 3.8, 4.5)]
+    price = lambda q: matcher.match_market({"title": q, "startTime": 0}, fx)  # noqa: E731
+    # kick-off times and dates are not scorelines
+    m = price("Will Arsenal beat Chelsea at 3:00 pm on 10/12?")
+    assert m and m["proposition"]["kind"] == "win"
+    # unsupported scopes get no price rather than a wrong one
+    for q in ("Will Arsenal lead Chelsea at half-time?", "Will Arsenal beat Chelsea on corners?",
+              "Will Arsenal win the league?", "Arsenal -1.5 handicap vs Chelsea?"):
+        assert price(q) is None, q
+    # header-style question about the second-named team
+    m = price("Arsenal vs Chelsea: will Chelsea win?")
+    assert m["proposition"] == {"kind": "win", "side": "away"}
+    # "win or draw" is not a plain draw; "not end in a draw" is its complement
+    assert price("Will Arsenal win or draw against Chelsea?")["proposition"]["kind"] == "not_lose"
+    nd = price("Will Arsenal vs Chelsea not end in a draw?")
+    assert nd["proposition"] == {"kind": "draw", "negate": True}
+    # scoring first is not "score at least once"
+    sf = price("Will Arsenal score first against Chelsea?")
+    anytime = price("Will Arsenal score against Chelsea?")
+    assert sf["proposition"]["kind"] == "first_goal" and sf["fairYes"] < anytime["fairYes"]
+    # "under 3 goals" means 2 or fewer
+    u3 = price("Arsenal vs Chelsea under 3 goals?")
+    o25 = price("Arsenal vs Chelsea over 2.5 goals?")
+    assert abs(u3["fairYes"] + o25["fairYes"] - 1) < 1e-6
+    # "3+ goals" is a total, "by more than 1" is a 2+ margin
+    assert price("Will Arsenal vs Chelsea have 3+ goals?")["proposition"]["kind"] == "total"
+    assert price("Will Arsenal beat Chelsea by more than 1 goal?")["proposition"]["atLeast"] == 2
+    # description text never flips the proposition
+    m = matcher.match_market({"title": "Will Arsenal beat Chelsea?", "description": "Not a draw market", "startTime": 0}, fx)
+    assert m["proposition"] == {"kind": "win", "side": "home"}
+
+
+def test_exact_score_perspective():
+    fx = [fixture("Argentina", "Spain", 2.6, 3.1, 2.9)]
+    m = matcher.match_market({"title": "Will Spain beat Argentina 3-2?", "startTime": 0}, fx)
+    assert m["proposition"] == {"kind": "exact", "home": 2, "away": 3}  # Spain (away) scores 3
+    m = matcher.match_market({"title": "Will Argentina beat Spain 3-2 in the World Cup Final?", "startTime": 0}, fx)
+    assert m["proposition"] == {"kind": "exact", "home": 3, "away": 2}
+    m = matcher.match_market({"title": "Spain 1-1 Argentina?", "startTime": 0}, fx)
+    assert m["proposition"] == {"kind": "exact", "home": 1, "away": 1}
+
+
+def test_women_fixtures_only_match_women_questions():
+    men = fixture("Chelsea", "Arsenal", 2.2, 3.4, 3.2)
+    women = fixture("Chelsea W", "Arsenal W", 1.9, 3.6, 3.9)
+    women["id"] = 2
+    m = matcher.match_market({"title": "Will Chelsea beat Arsenal?", "startTime": 0}, [women, men])
+    assert m["fixtureId"] == men["id"]
+    m = matcher.match_market({"title": "Will Chelsea Women beat Arsenal Women?", "startTime": 0}, [women, men])
+    assert m["fixtureId"] == 2
+
+
+def test_generated_questions_round_trip_through_matcher():
+    fx = fixture("Aston Villa", "Brentford", 1.9, 3.6, 4.2)
+    for kind in marketgen.kinds_for(fx):
+        q = marketgen.question(fx, kind)
+        m = matcher.match_market({"title": q, "startTime": fx["startTimestamp"]}, [fx])
+        assert m, q
+        assert abs(m["fairYes"] - marketgen.fair_yes(fx, kind)) < 0.02, (q, m["label"])
+
+
 def test_concede_maps_to_opponent_scoring():
     fx = [fixture("France", "Belgium", 1.9, 3.6, 4.2)]
     m = matcher.match_market({"title": "France will concede in the first 25 minutes against Belgium", "startTime": 0}, fx)
@@ -67,9 +129,16 @@ def test_concede_maps_to_opponent_scoring():
 def test_marketgen_payload():
     fx = fixture("Arsenal", "Chelsea", 1.8, 3.8, 4.5)
     p = marketgen.build(fx, "home_win", "https://example.com/x.png")
-    assert p["question"] == "Will Arsenal beat Chelsea?"
+    assert p["question"].startswith("Will Arsenal beat Chelsea on ") and len(p["question"]) <= marketgen.MAX_QUESTION
     assert p["startTime"] < p["endTime"] <= p["resolutionTime"]
     assert p["category"] == "sports" and p["sourcesOfTruth"] and p["imageUrl"]
+    # everything create_event writes on-chain must fit in one Solana transaction
+    long = fixture("Brighton & Hove Albion Football Club", "Wolverhampton Wanderers Football Club", 2.0, 3.4, 3.9)
+    long["tournament"] = "England - Premier League Summer Series Invitational"
+    for kind in marketgen.kinds_for(long):
+        q = marketgen.build(long, kind)
+        size = len(q["question"].encode()) + len(q["resolutionRule"].encode()) + sum(len(s) for s in q["sourcesOfTruth"])
+        assert size <= marketgen.ONCHAIN_TEXT_BUDGET, (kind, size)
 
 
 def test_pinnacle_odds_and_finish():
